@@ -1,0 +1,42 @@
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: trailing-whitespace
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.31.1
+    hooks:
+      - id: markdownlint
+        # Disable rule MD013: maximum line length 80 columns
+        args: [ --disable=MD013 ]
+
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-lint
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 88a4f9b2f48fc44b025a48fa6a8ac7cc89ef70e0
+    hooks:
+      - id: flake8
+        args: [ --max-line-length=120 ]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: c655831799765e9593989ee12faba13b6ca391a5
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/psf/black
+    rev: 8fe627072f15ff2e3d380887b92f7868efaf6d05
+    hooks:
+      - id: black
+
+  - repo: https://github.com/bmorcos/pre-commit-hooks-cpp
+    rev: 9a5aa38207bf557961110d6a4f7e3a9d352911f9
+    hooks:
+      - id: cpplint
+        args: [ --filter=-legal/copyright ]

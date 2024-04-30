@@ -1,0 +1,12 @@
+add_library(platform STATIC platform.cpp)
+
+if (${CMAKE_SYSTEM_NAME} EQUAL Android)
+    message(NOTICE "Platform lib using PLATFORM_ANDROID")
+    target_compile_definitions(platform PRIVATE PLATFORM_ANDROID)
+elseif (${CMAKE_SYSTEM_NAME} EQUAL Wasm)
+    message(NOTICE "Platform lib using PLATFORM_WEB")
+    target_compile_definitions(platform PRIVATE PLATFORM_WEB)
+else ()
+    message(NOTICE "Platform lib using default PLATFORM_DESKTOP")
+    target_compile_definitions(platform PRIVATE PLATFORM_DESKTOP)
+endif ()

@@ -1,14 +1,17 @@
 find_package(raylib 5.0 REQUIRED)
+find_package(absl REQUIRED)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(platform)
+add_subdirectory(game/input)
 
 add_executable(u-bahn
         main.cpp
         game/game.cpp
-
 )
 
-target_include_directories(u-bahn PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(u-bahn PRIVATE raylib)
+target_link_libraries(u-bahn PRIVATE raylib abseil::abseil platform Game::Input)
 
 include(GNUInstallDirs)
 install(TARGETS u-bahn

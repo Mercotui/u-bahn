@@ -19,6 +19,8 @@ class UBahnRecipe(ConanFile):
         #   -o glfw/*:with_x11=False -o glfw/*:with_wayland=True
         #   -o xkbcommon/*:with_x11=False -o xkbcommon/*:with_wayland=True
         self.requires("raylib/5.0#2c46bfe4d9d67abe23c6668c7e7f289f")
+        self.requires("gtest/1.14.0")
+        self.requires("abseil/20240116.2")
 
     def layout(self):
         cmake_layout(self)

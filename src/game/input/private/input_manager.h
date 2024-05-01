@@ -18,7 +18,7 @@ class InputManager : public InputManagerInterface {
 
   [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
 
-  void Poll() override;
+  Input::Samples Poll() override;
 
   void SetConfig(int id, Input::Config) override;
 

@@ -22,4 +22,20 @@ struct Info {
 
   Config config{};
 };
+
+struct Axis {
+  float value{0.0f};
+};
+
+struct Button {
+  bool pressed{false};
+};
+
+struct Sample {
+  Info info;
+  std::vector<Button> buttons;
+  std::vector<Axis> axes;
+};
+
+using Samples = std::vector<Sample>;
 }  // namespace Input

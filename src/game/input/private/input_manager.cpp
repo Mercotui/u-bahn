@@ -49,7 +49,15 @@ std::vector<Info> InputManager::ListInputs() const {
   return aggregated_inputs;
 }
 
-void InputManager::Poll() {}
+Input::Samples InputManager::Poll() {
+  Input::Samples aggregated_samples;
+  for (const auto& [type, handler] : device_handlers_) {
+    auto handler_samples = handler->Poll();
+    aggregated_samples.insert(std::end(aggregated_samples), std::make_move_iterator(std::begin(handler_samples)),
+                              std::make_move_iterator(std::end(handler_samples)));
+  }
+  return aggregated_samples;
+}
 
 void InputManager::SetConfig(int id, Input::Config) {
   std::cout << "InputManager::SetConfig unimplemented!" << std::endl;

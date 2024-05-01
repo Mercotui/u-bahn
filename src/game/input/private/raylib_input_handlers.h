@@ -6,7 +6,7 @@ namespace RaylibInputHandlers {
 class Keyboard final : public InputManagerInterface {
  public:
   [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  void Poll() override;
+  Input::Samples Poll() override;
 
   void SetConfig(int id, Input::Config config) override;
 };
@@ -14,7 +14,7 @@ class Keyboard final : public InputManagerInterface {
 class Mouse final : public InputManagerInterface {
  public:
   [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  void Poll() override;
+  Input::Samples Poll() override;
 
   void SetConfig(int id, Input::Config config) override;
 };
@@ -22,7 +22,7 @@ class Mouse final : public InputManagerInterface {
 class Touch final : public InputManagerInterface {
  public:
   [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  void Poll() override;
+  Input::Samples Poll() override;
 
   void SetConfig(int id, Input::Config config) override;
 };
@@ -30,7 +30,7 @@ class Touch final : public InputManagerInterface {
 class Gamepad final : public InputManagerInterface {
  public:
   [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  void Poll() override;
+  Input::Samples Poll() override;
 
   void SetConfig(int id, Input::Config config) override;
 };

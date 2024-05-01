@@ -1,6 +1,8 @@
 #pragma once
 #include <raylib.h>
 
+#include "input/input_manager_interface.h"
+
 class Game {
  public:
   Game();
@@ -13,4 +15,5 @@ class Game {
 
   Model model_{};
   Camera3D camera_{};
+  std::unique_ptr<InputManagerInterface> input_;
 };

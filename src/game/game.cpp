@@ -29,9 +29,9 @@ bool Game::Loop() {
   BeginMode3D(camera_);
 
   float val{0.0f};
-  for (const auto& sample : input_->Poll()) {
-    if (sample.info.type == Input::Type::kJoystick && sample.info.id == 1) {
-      val = sample.axes[2].value;
+  for (const auto& input : input_->Poll()) {
+    if (input->type == Input::Type::kJoystick && input->id == 1) {
+      val = input->axes[2].value;
     }
   }
 

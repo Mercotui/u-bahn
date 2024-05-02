@@ -10,8 +10,7 @@ class InputManagerInterface {
  public:
   virtual ~InputManagerInterface() = default;
 
-  [[nodiscard]] virtual std::vector<Input::Info> ListInputs() const = 0;
-  virtual Input::Samples Poll() = 0;
+  virtual InputList Poll() = 0;
 
   virtual void SetConfig(int id, Input::Config) = 0;
 };

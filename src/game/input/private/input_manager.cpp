@@ -9,9 +9,6 @@
 #include "game/input/private/raylib_input_handlers.h"
 #include "platform/platform.h"
 
-using Input::Config;
-using Input::Info;
-
 namespace InputManagerFactory {
 std::unique_ptr<InputManagerInterface> Create(Platform::Type platform) {
   InputManager::DeviceHandlers handlers;
@@ -39,24 +36,14 @@ std::unique_ptr<InputManagerInterface> Create(Platform::Type platform) {
 }
 }  // namespace InputManagerFactory
 
-std::vector<Info> InputManager::ListInputs() const {
-  std::vector<Info> aggregated_inputs;
+InputList InputManager::Poll() {
+  InputList aggregated_inputs;
   for (const auto& [type, handler] : device_handlers_) {
-    auto handler_inputs = handler->ListInputs();
+    auto handler_inputs = handler->Poll();
     aggregated_inputs.insert(std::end(aggregated_inputs), std::make_move_iterator(std::begin(handler_inputs)),
                              std::make_move_iterator(std::end(handler_inputs)));
   }
   return aggregated_inputs;
-}
-
-Input::Samples InputManager::Poll() {
-  Input::Samples aggregated_samples;
-  for (const auto& [type, handler] : device_handlers_) {
-    auto handler_samples = handler->Poll();
-    aggregated_samples.insert(std::end(aggregated_samples), std::make_move_iterator(std::begin(handler_samples)),
-                              std::make_move_iterator(std::end(handler_samples)));
-  }
-  return aggregated_samples;
 }
 
 void InputManager::SetConfig(int id, Input::Config) {

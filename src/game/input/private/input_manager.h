@@ -16,9 +16,7 @@ class InputManager : public InputManagerInterface {
 
   explicit InputManager(DeviceHandlers device_handlers) : device_handlers_(std::move(device_handlers)){};
 
-  [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-
-  Input::Samples Poll() override;
+  InputList Poll() override;
 
   void SetConfig(int id, Input::Config) override;
 

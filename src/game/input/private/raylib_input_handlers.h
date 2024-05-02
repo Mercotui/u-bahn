@@ -5,33 +5,49 @@
 namespace RaylibInputHandlers {
 class Keyboard final : public InputManagerInterface {
  public:
-  [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  Input::Samples Poll() override;
+  Keyboard();
 
-  void SetConfig(int id, Input::Config config) override;
+  InputList Poll() override;
+
+  void SetConfig(int, Input::Config) override {};
+
+ private:
+  std::shared_ptr<Input> input_;
 };
 
 class Mouse final : public InputManagerInterface {
  public:
-  [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  Input::Samples Poll() override;
+  Mouse();
 
-  void SetConfig(int id, Input::Config config) override;
+  InputList Poll() override;
+
+  void SetConfig(int, Input::Config) override {};
+
+ private:
+  std::shared_ptr<Input> input_;
 };
 
 class Touch final : public InputManagerInterface {
  public:
-  [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  Input::Samples Poll() override;
+  Touch();
 
-  void SetConfig(int id, Input::Config config) override;
+  InputList Poll() override;
+
+  void SetConfig(int, Input::Config) override {};
+
+ private:
+  std::shared_ptr<Input> input_;
 };
 
 class Gamepad final : public InputManagerInterface {
  public:
-  [[nodiscard]] std::vector<Input::Info> ListInputs() const override;
-  Input::Samples Poll() override;
+  Gamepad();
+
+  InputList Poll() override;
 
   void SetConfig(int id, Input::Config config) override;
+
+ private:
+  std::shared_ptr<Input> input_;
 };
 }  // namespace RaylibInputHandlers

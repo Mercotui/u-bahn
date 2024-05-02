@@ -1,41 +1,44 @@
 #pragma once
 
+#include <chrono>
+#include <memory>
 #include <string>
+#include <vector>
 
-namespace Input {
-enum class Type {
-  kKeyboard,
-  kMouse,
-  kTouch,
-  kJoystick,
-  kGamepad,
-};
+struct Input {
+  enum class Type {
+    kKeyboard,
+    kMouse,
+    kTouch,
+    kJoystick,
+    kGamepad,
+  };
 
-struct Config {
-  bool enabled{true};
-};
+  struct Config {
+    bool enabled{true};
+  };
 
-struct Info {
+  struct Axis {
+    std::string name;
+    float value{0.0f};
+    bool active{false};
+  };
+
+  struct Button {
+    std::string name;
+    bool down{false};
+    bool changed{false};
+  };
+
   int id{};
   std::string name;
   Type type{};
+  bool active{false};
+
+  std::vector<Button> buttons;
+  std::vector<Axis> axes;
 
   Config config{};
 };
 
-struct Axis {
-  float value{0.0f};
-};
-
-struct Button {
-  bool pressed{false};
-};
-
-struct Sample {
-  Info info;
-  std::vector<Button> buttons;
-  std::vector<Axis> axes;
-};
-
-using Samples = std::vector<Sample>;
-}  // namespace Input
+using InputList = std::vector<std::shared_ptr<Input>>;

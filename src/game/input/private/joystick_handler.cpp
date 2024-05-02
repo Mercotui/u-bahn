@@ -3,6 +3,7 @@
 #include <absl/log/log.h>
 
 #include <iostream>
+#include <numeric>
 
 #include "game/input/input.h"
 #include "libenjoy.h"
@@ -15,8 +16,8 @@ float RemapAxisRange(float value) {
 }  // namespace
 
 JoystickHandler::JoystickHandler() : joy_context_(libenjoy_init()) {
-  Scan();
-  for (auto const& [id, joystick_sample] : joystick_samples_) {
+  ScanAll();
+  for (auto const& [id, input] : joystick_inputs_) {
     Open(id);
   }
 }
@@ -28,15 +29,7 @@ JoystickHandler::~JoystickHandler() {
   libenjoy_close(joy_context_);
 }
 
-std::vector<Input::Info> JoystickHandler::ListInputs() const {
-  std::vector<Input::Info> joystick_infos;
-  for (auto const& [id, joystick_sample] : joystick_samples_) {
-    joystick_infos.push_back(joystick_sample.info);
-  }
-  return joystick_infos;
-}
-
-Input::Samples JoystickHandler::Poll() {
+InputList JoystickHandler::Poll() {
   libenjoy_event event;
   while (libenjoy_poll(joy_context_, &event)) {
     switch (event.type) {
@@ -52,11 +45,11 @@ Input::Samples JoystickHandler::Poll() {
     }
   }
 
-  Input::Samples samples;
-  for (const auto& [id, sample] : joystick_samples_) {
-    samples.push_back(sample);
+  InputList inputs;
+  for (const auto& [id, input] : joystick_inputs_) {
+    inputs.push_back(input);
   }
-  return samples;
+  return inputs;
 }
 
 void JoystickHandler::SetConfig(int id, Input::Config config) {
@@ -67,36 +60,73 @@ void JoystickHandler::SetConfig(int id, Input::Config config) {
 }
 
 void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value) {
-  auto sample_it = joystick_samples_.find(id);
-  if (sample_it == joystick_samples_.end() || (axis > sample_it->second.axes.size())) {
+  auto input_it = joystick_inputs_.find(id);
+  if (input_it == joystick_inputs_.end() || (axis > input_it->second->axes.size())) {
     return;
   }
-  sample_it->second.axes[axis].value = RemapAxisRange(static_cast<float>(value));
+  input_it->second->axes[axis].value = RemapAxisRange(static_cast<float>(value));
+  // TODO(Menno 02.05.2024) Detect activity here
+  //  if (de) {
+  //    input_it->second->last_activity = std::chrono::steady_clock::now();
+  //  }
 }
 
 void JoystickHandler::HandleButton(unsigned id, unsigned button, bool pressed) {
-  auto sample_it = joystick_samples_.find(id);
-  if (sample_it == joystick_samples_.end() || (button > sample_it->second.buttons.size())) {
+  auto input_it = joystick_inputs_.find(id);
+  if (input_it == joystick_inputs_.end() || (button > input_it->second->buttons.size())) {
     return;
   }
-  sample_it->second.buttons[button].pressed = pressed;
+  auto& button_ref = input_it->second->buttons[button];
+  button_ref.down = pressed;
+  button_ref.changed = true;
 }
 
 void JoystickHandler::HandleConnection(unsigned, bool) {
   // TODO (Menno 01.05.2024) Handle dynamic connection/disconnection?
 }
 
-void JoystickHandler::Scan() {
+void JoystickHandler::ScanAll() {
   libenjoy_enumerate(joy_context_);
   auto list = libenjoy_get_info_list(joy_context_);
 
   for (int i = 0; i < list->count; i++) {
     auto entry = list->list[i];
-    joystick_samples_[entry->id] = {
-        .info = {.id = static_cast<int>(entry->id), .name = entry->name, .type = Input::Type::kJoystick}};
+    if (!joystick_inputs_.contains(entry->id)) {
+      auto input = std::make_shared<Input>();
+      input->id = static_cast<int>(entry->id);
+      input->name = entry->name;
+      input->type = Input::Type::kJoystick;
+      joystick_inputs_.emplace(input->id, input);
+    }
   }
 
   libenjoy_free_info_list(list);
+}
+
+void JoystickHandler::Scan(unsigned id) {
+  auto input_it = joystick_inputs_.find(id);
+  if (input_it == joystick_inputs_.end()) {
+    return;
+  }
+  auto joystick_raw_it = joysticks_.find(id);
+  if (joystick_raw_it == joysticks_.end()) {
+    return;
+  }
+
+  auto joystick_raw = joystick_raw_it->second;
+  auto& input = input_it->second;
+
+  int axes_count = libenjoy_get_axes_num(joystick_raw);
+  input->axes.resize(axes_count);
+  int count = 0;
+  std::for_each(std::begin(input->axes), std::end(input->axes),
+                [&count](auto& axis) { axis.name = std::format("Axis{}", count); });
+
+  int button_count = libenjoy_get_buttons_num(joystick_raw_it->second);
+  input->buttons.resize(button_count);
+  count = 0;
+  std::for_each(std::begin(input->buttons), std::end(input->buttons),
+                [&count](auto& button) { button.name = std::format("Button{}", count); });
 }
 
 void JoystickHandler::Open(unsigned id) {
@@ -112,12 +142,7 @@ void JoystickHandler::Open(unsigned id) {
   }
   joysticks_.emplace(id, joystick_raw);
 
-  if (auto sample_it = joystick_samples_.find(id); sample_it != joystick_samples_.end()) {
-    int axes_count = libenjoy_get_axes_num(joystick_raw);
-    sample_it->second.axes.resize(axes_count);
-    int button_count = libenjoy_get_buttons_num(joystick_raw);
-    sample_it->second.buttons.resize(button_count);
-  }
+  Scan(id);
 }
 
 void JoystickHandler::Close(unsigned int id) {

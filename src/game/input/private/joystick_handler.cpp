@@ -1,12 +1,11 @@
-#include "joystick_handler.h"
+#include "game/input/private/joystick_handler.h"
 
 #include <absl/log/log.h>
 
 #include <iostream>
-#include <numeric>
 
 #include "game/input/input.h"
-#include "libenjoy.h"
+#include "libenjoy/libenjoy.h"
 
 namespace {
 float RemapAxisRange(float value) {
@@ -81,8 +80,9 @@ void JoystickHandler::HandleButton(unsigned id, unsigned button, bool pressed) {
   button_ref.changed = true;
 }
 
-void JoystickHandler::HandleConnection(unsigned, bool) {
-  // TODO (Menno 01.05.2024) Handle dynamic connection/disconnection?
+void JoystickHandler::HandleConnection(unsigned id, bool connected) {
+  LOG(INFO) << "JoystickHandler::HandleConnection(id=" << id << ", connected" << connected << ")";
+  // TODO(Menno 01.05.2024) Handle dynamic connection/disconnection?
 }
 
 void JoystickHandler::ScanAll() {

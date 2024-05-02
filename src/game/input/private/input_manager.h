@@ -14,7 +14,7 @@ class InputManager : public InputManagerInterface {
  public:
   using DeviceHandlers = std::unordered_map<Input::Type, std::unique_ptr<InputManagerInterface>>;
 
-  explicit InputManager(DeviceHandlers device_handlers) : device_handlers_(std::move(device_handlers)){};
+  explicit InputManager(DeviceHandlers device_handlers) : device_handlers_(std::move(device_handlers)) {}
 
   InputList Poll() override;
 

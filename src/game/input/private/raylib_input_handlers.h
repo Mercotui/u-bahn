@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "game/input/input_manager_interface.h"
 
 namespace RaylibInputHandlers {

@@ -1,4 +1,4 @@
-#include "input_manager.h"
+#include "game/input/private/input_manager.h"
 
 #include <absl/log/log.h>
 

@@ -33,7 +33,7 @@ class JoystickHandlerTestFixture : public ::testing::Test {
 TEST_F(JoystickHandlerTestFixture, Poll) {
   auto list = handler.Poll();
   EXPECT_EQ(list.size(), 2);
-};
+}
 
 TEST_F(JoystickHandlerTestFixture, SetConfig) {
   const auto list_before = handler.Poll();
@@ -46,4 +46,4 @@ TEST_F(JoystickHandlerTestFixture, SetConfig) {
 
   const auto list_after = handler.Poll();
   EXPECT_EQ(list_after.size(), 1);
-};
+}

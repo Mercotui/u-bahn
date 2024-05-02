@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace InputUnittestHelpers {
 template <class ListType>
 constexpr typename std::iterator_traits<typename ListType::iterator>::difference_type CountInputType(

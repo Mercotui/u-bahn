@@ -1,5 +1,8 @@
 #pragma once
+
 #include <raylib.h>
+
+#include <memory>
 
 #include "input/input_manager_interface.h"
 

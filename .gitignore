@@ -1,6 +1,8 @@
 # Custom Aditions:
 
 CMakeUserPresets.json
+build
+.idea
 
 # Created by https://www.toptal.com/developers/gitignore/api/conan,cmake,c++,c,clion
 # Edit at https://www.toptal.com/developers/gitignore?templates=conan,cmake,c++,c,clion

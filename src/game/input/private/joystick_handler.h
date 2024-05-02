@@ -1,11 +1,12 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "game/input/input.h"
 #include "game/input/input_manager_interface.h"
-#include "libenjoy.h"
+#include "libenjoy/libenjoy.h"
 
 class JoystickHandler final : public InputManagerInterface {
  public:

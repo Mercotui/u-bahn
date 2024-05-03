@@ -22,9 +22,10 @@ JoystickHandler::JoystickHandler() : joy_context_(libenjoy_init()) {
 }
 
 JoystickHandler::~JoystickHandler() {
-  for (auto [id, joystick_raw] : joysticks_) {
-    Close(id);
+  while (!joysticks_.empty()) {
+    Close(std::begin(joysticks_)->first);
   }
+
   libenjoy_close(joy_context_);
 }
 
@@ -46,16 +47,26 @@ InputList JoystickHandler::Poll() {
 
   InputList inputs;
   for (const auto& [id, input] : joystick_inputs_) {
-    inputs.push_back(input);
+    if (input->config.enabled) {
+      inputs.push_back(input);
+    }
   }
   return inputs;
 }
 
 void JoystickHandler::SetConfig(int id, Input::Config config) {
-  if (!config.enabled) {
-    Close(static_cast<unsigned>(id));
+  auto input_it = joystick_inputs_.find(id);
+  if (input_it == joystick_inputs_.end()) {
+    return;
   }
-  // TODO(Menno 01.05.2024) Add a way to re-open the joystick once it's re-enabled.
+  bool previously_enabled = input_it->second->config.enabled;
+  input_it->second->config = config;
+
+  if (previously_enabled && !config.enabled) {
+    Close(static_cast<unsigned>(id));
+  } else if (!previously_enabled && config.enabled) {
+    Open(static_cast<unsigned>(id));
+  }
 }
 
 void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value) {
@@ -118,15 +129,15 @@ void JoystickHandler::Scan(unsigned id) {
 
   int axes_count = libenjoy_get_axes_num(joystick_raw);
   input->axes.resize(axes_count);
-  int count = 0;
+  int count = 1;
   std::for_each(std::begin(input->axes), std::end(input->axes),
-                [&count](auto& axis) { axis.name = std::format("Axis{}", count); });
+                [&count](auto& axis) { axis.name = std::format("Axis {}", count++); });
 
   int button_count = libenjoy_get_buttons_num(joystick_raw_it->second);
   input->buttons.resize(button_count);
-  count = 0;
+  count = 1;
   std::for_each(std::begin(input->buttons), std::end(input->buttons),
-                [&count](auto& button) { button.name = std::format("Button{}", count); });
+                [&count](auto& button) { button.name = std::format("Button {}", count++); });
 }
 
 void JoystickHandler::Open(unsigned id) {
@@ -153,4 +164,5 @@ void JoystickHandler::Close(unsigned int id) {
   }
 
   libenjoy_close_joystick(joystick_raw_it->second);
+  joysticks_.erase(joystick_raw_it);
 }

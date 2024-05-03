@@ -8,7 +8,7 @@ namespace {
 using InputUnittestHelpers::CountInputName;
 using InputUnittestHelpers::CountInputType;
 
-constexpr auto kPrerequisiteJoystickName = "euh, I should go find the joystick name";
+constexpr auto kPrerequisiteJoystickName = "Mad Catz Mad Catz F.L.Y.5 Stick";
 }  // namespace
 
 /**
@@ -31,8 +31,21 @@ class JoystickHandlerTestFixture : public ::testing::Test {
 };
 
 TEST_F(JoystickHandlerTestFixture, Poll) {
-  auto list = handler.Poll();
+  const auto list = handler.Poll();
   EXPECT_EQ(list.size(), 2);
+
+  auto joy_it = std::find_if(std::begin(list), std::end(list),
+                             [](const auto& input) { return input->name == kPrerequisiteJoystickName; });
+  EXPECT_NE(joy_it, std::end(list));
+
+  const auto& input = *joy_it;
+  EXPECT_TRUE(input->config.enabled);
+  EXPECT_EQ(input->buttons.size(), 14);
+  EXPECT_EQ(input->buttons.front().name, "Button 1");
+  EXPECT_EQ(input->buttons.back().name, "Button 14");
+  EXPECT_EQ(input->axes.size(), 7);
+  EXPECT_EQ(input->axes.front().name, "Axis 1");
+  EXPECT_EQ(input->axes.back().name, "Axis 7");
 }
 
 TEST_F(JoystickHandlerTestFixture, SetConfig) {
@@ -41,9 +54,14 @@ TEST_F(JoystickHandlerTestFixture, SetConfig) {
 
   const int id_to_disable = list_before.front()->id;
   Input::Config config;
+
   config.enabled = false;
   handler.SetConfig(id_to_disable, config);
+  const auto list_after1 = handler.Poll();
+  EXPECT_EQ(list_after1.size(), 1);
 
-  const auto list_after = handler.Poll();
-  EXPECT_EQ(list_after.size(), 1);
+  config.enabled = true;
+  handler.SetConfig(id_to_disable, config);
+  const auto list_after2 = handler.Poll();
+  EXPECT_EQ(list_after2.size(), 2);
 }

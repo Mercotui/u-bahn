@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 
+#include "game/input/input_manager_interface.h"
 #include "platform/platform.h"
 
 Game::Game() : input_(InputManagerFactory::Create(Platform::Type::kDesktop)) {

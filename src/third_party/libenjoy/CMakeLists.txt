@@ -5,7 +5,7 @@ add_library(enjoy STATIC
         src/libenjoy_linux.c
 )
 
-target_include_directories(enjoy PRIVATE src)
+target_include_directories(enjoy PRIVATE src include/libenjoy)
 target_include_directories(enjoy PUBLIC include)
 
 #  HEADERS += $$PWD/src/libenjoy.h \

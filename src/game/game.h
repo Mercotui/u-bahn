@@ -4,7 +4,8 @@
 
 #include <memory>
 
-#include "input/input_manager_interface.h"
+//! Forward Declared, defined in game/input/input_manager_interface.h
+class InputManagerInterface;
 
 class Game {
  public:

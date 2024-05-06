@@ -5,7 +5,16 @@
 #include "game/input/input_manager_interface.h"
 #include "platform/platform.h"
 
-Game::Game() : input_(InputManagerFactory::Create(Platform::Type::kDesktop)) {
+namespace {
+using Control::TrainControls;
+constexpr float kMaxTrainVelocity{1.0f};
+constexpr float kMinTrainVelocity{-kMaxTrainVelocity};
+
+}  // namespace
+
+Game::Game()
+    : input_(InputManagerFactory::Create(Platform::Type::kDesktop)),
+      controls_mapper_(std::make_unique<ControlSchemeMapper>()) {
   camera_ = {0};
   camera_.position = (::Vector3){10.0f, 10.0f, 10.0f};
   camera_.target = (Vector3){0.0f, 0.0f, 0.0f};
@@ -21,26 +30,22 @@ Game::Game() : input_(InputManagerFactory::Create(Platform::Type::kDesktop)) {
 Game::~Game() { UnloadModel(model_); }
 
 bool Game::Loop() {
-  UpdateCamera(&camera_, CAMERA_FREE);
-
   BeginDrawing();
 
   ClearBackground(RAYWHITE);
 
   BeginMode3D(camera_);
 
-  float val{0.0f};
-  for (const auto& input : input_->Poll()) {
-    if (input->active) {
-      active_input_ = input->name;
-      val = input->axes.front().value;
-    }
-  }
+  auto controls_variant = controls_mapper_->Map(input_->Poll(), Control::Mode::kTrain);
+  const auto controls = get<TrainControls>(controls_variant);
+  train_velocity_ += 0.0005f * controls.throttle;
+  train_velocity_ = std::clamp(train_velocity_, kMinTrainVelocity, kMaxTrainVelocity);
 
-  DrawModel(model_, {val, 0.0f, 0.0f}, 1.0, YELLOW);
+  train_location_ += train_velocity_;
+  DrawModel(model_, {train_location_, 0.0f, 0.0f}, 0.1, YELLOW);
 
   EndMode3D();
-  DrawText(active_input_.c_str(), 40, 40, 100, BLACK);
+  DrawText(std::format("{} value={}", active_input_, controls.throttle).c_str(), 40, 40, 20, BLACK);
 
   EndDrawing();
 

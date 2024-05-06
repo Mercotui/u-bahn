@@ -26,7 +26,6 @@ std::unique_ptr<InputManagerInterface> Create(Platform::Type platform) {
     case Platform::Type::kDesktop: {
       handlers.emplace(Input::Type::kKeyboard, std::make_unique<RaylibInputHandlers::Keyboard>());
       handlers.emplace(Input::Type::kMouse, std::make_unique<RaylibInputHandlers::Mouse>());
-      handlers.emplace(Input::Type::kGamepad, std::make_unique<RaylibInputHandlers::Gamepad>());
       handlers.emplace(Input::Type::kJoystick, std::make_unique<JoystickHandler>());
       break;
     }

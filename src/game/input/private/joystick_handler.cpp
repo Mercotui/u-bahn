@@ -10,7 +10,7 @@
 namespace {
 float RemapAxisRange(float value) {
   // low2 + (pressed - low1) * (high2 - low2) / (high1 - low1)
-  return -5.0f + (value + 32767.0f) * 10.0f / (32767.0f * 2.0f);
+  return -1.0f + (value + 32767.0f) * 2.0f / (32767.0f * 2.0f);
 }
 }  // namespace
 
@@ -30,11 +30,27 @@ JoystickHandler::~JoystickHandler() {
 }
 
 InputList JoystickHandler::Poll() {
+  // clear all activity flags
+  for (auto& input : joystick_inputs_) {
+    input.second->active = false;
+    for (auto& axis : input.second->axes) {
+      axis.active = false;
+    }
+    for (auto& button : input.second->buttons) {
+      button.changed = false;
+    }
+  }
+
+  // Creating the timepoint here is not great, as it has no correlation with the actual sample times, but I think
+  // windows does not provide event timestamps, linux does, but we want to cater to the lowest common denominator.
+  // We create one timepoint per Poll call to avoid getting a time diff between samples.
+  auto sample_timepoint = std::chrono::steady_clock::now();
+
   libenjoy_event event;
   while (libenjoy_poll(joy_context_, &event)) {
     switch (event.type) {
       case LIBENJOY_EV_AXIS:
-        HandleAxis(event.joy_id, event.part_id, event.data);
+        HandleAxis(event.joy_id, event.part_id, event.data, sample_timepoint);
         break;
       case LIBENJOY_EV_BUTTON:
         HandleButton(event.joy_id, event.part_id, event.data == 1);
@@ -69,16 +85,23 @@ void JoystickHandler::SetConfig(int id, Input::Config config) {
   }
 }
 
-void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value) {
+void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value, InputAxisHelpers::SampleTimePoint time_point) {
   auto input_it = joystick_inputs_.find(id);
   if (input_it == joystick_inputs_.end() || (axis > input_it->second->axes.size())) {
     return;
   }
-  input_it->second->axes[axis].value = RemapAxisRange(static_cast<float>(value));
-  // TODO(Menno 02.05.2024) Detect activity here
-  //  if (de) {
-  //    input_it->second->last_activity = std::chrono::steady_clock::now();
-  //  }
+
+  auto& axis_ref = input_it->second->axes[axis];
+  axis_ref.value = RemapAxisRange(static_cast<float>(value));
+
+  auto activity_it = axis_activity_.find(JoystickAxisKey(id, axis));
+  if (activity_it == axis_activity_.end()) {
+    axis_ref.active = false;
+    return;
+  }
+  axis_ref.active = activity_it->second.Detect({.time_point = time_point, .value = axis_ref.value});
+  // if this axis is active then the joystick is active
+  input_it->second->active |= axis_ref.active;
 }
 
 void JoystickHandler::HandleButton(unsigned id, unsigned button, bool pressed) {
@@ -89,11 +112,22 @@ void JoystickHandler::HandleButton(unsigned id, unsigned button, bool pressed) {
   auto& button_ref = input_it->second->buttons[button];
   button_ref.down = pressed;
   button_ref.changed = true;
+
+  // if the button is changed then this joystick is active
+  input_it->second->active = true;
 }
 
 void JoystickHandler::HandleConnection(unsigned id, bool connected) {
-  LOG(INFO) << "JoystickHandler::HandleConnection(id=" << id << ", connected" << connected << ")";
-  // TODO(Menno 01.05.2024) Handle dynamic connection/disconnection?
+  if (!connected) {
+    Close(id);
+    if (const auto input_it = joystick_inputs_.find(id); input_it != joystick_inputs_.end()) {
+      const auto axes_count = input_it->second->axes.size();
+      for (auto axis_index = 0; axis_index < axes_count; axis_index++) {
+        // remove the axis activity detectors registered for this joystick
+        axis_activity_.erase(JoystickAxisKey(id, axis_index));
+      }
+    }
+  }
 }
 
 void JoystickHandler::ScanAll() {
@@ -129,9 +163,13 @@ void JoystickHandler::Scan(unsigned id) {
 
   int axes_count = libenjoy_get_axes_num(joystick_raw);
   input->axes.resize(axes_count);
-  int count = 1;
-  std::for_each(std::begin(input->axes), std::end(input->axes),
-                [&count](auto& axis) { axis.name = std::format("Axis {}", count++); });
+  int count = 0;
+  std::for_each(std::begin(input->axes), std::end(input->axes), [&](auto& axis) {
+    axis.name = std::format("Axis {}", count + 1);
+    const auto logging_prefix = std::format("joy{}axis{}", id, count + 1);
+    axis_activity_.emplace(JoystickAxisKey(id, count), logging_prefix);
+    count++;
+  });
 
   int button_count = libenjoy_get_buttons_num(joystick_raw_it->second);
   input->buttons.resize(button_count);

@@ -11,7 +11,6 @@ struct Input {
     kMouse,
     kTouch,
     kJoystick,
-    kGamepad,
   };
 
   struct Config {

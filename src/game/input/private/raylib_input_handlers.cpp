@@ -1,5 +1,8 @@
 #include "game/input/private/raylib_input_handlers.h"
 
+#include <absl/log/log.h>
+#include <raylib.h>
+
 #include "game/input/input.h"
 
 namespace RaylibInputHandlers {
@@ -23,10 +26,4 @@ Touch::Touch() : input_(std::make_shared<Input>()) {
 }
 
 InputList Touch::Poll() { return {input_}; }
-
-Gamepad::Gamepad() : input_() {}
-
-InputList Gamepad::Poll() { return {}; }
-
-void Gamepad::SetConfig(int id, Input::Config) {}
 }  // namespace RaylibInputHandlers

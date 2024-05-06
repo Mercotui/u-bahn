@@ -31,14 +31,17 @@ bool Game::Loop() {
 
   float val{0.0f};
   for (const auto& input : input_->Poll()) {
-    if (input->type == Input::Type::kJoystick && input->id == 1) {
-      val = input->axes[2].value;
+    if (input->active) {
+      active_input_ = input->name;
+      val = input->axes.front().value;
     }
   }
 
   DrawModel(model_, {val, 0.0f, 0.0f}, 1.0, YELLOW);
 
   EndMode3D();
+  DrawText(active_input_.c_str(), 40, 40, 100, BLACK);
+
   EndDrawing();
 
   return !WindowShouldClose();

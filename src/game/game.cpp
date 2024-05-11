@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 
+#include "game/control/control_scheme_mapper.h"
 #include "game/input/input_manager_interface.h"
 #include "platform/platform.h"
 

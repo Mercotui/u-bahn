@@ -6,7 +6,9 @@ add_library(game_input STATIC
         private/input_manager.cpp
         private/joystick_handler.cpp
         private/raylib_input_handlers.cpp
+        private/raylib_input_helpers.cpp
         private/input_axis_helpers.cpp
+        private/keyboard_mouse.cpp
 )
 add_library(Game::Input ALIAS game_input)
 target_link_libraries(game_input PRIVATE absl::log raylib enjoy platform)

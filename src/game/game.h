@@ -7,7 +7,12 @@
 
 //! Forward Declared, defined in game/input/input_manager_interface.h
 class InputManagerInterface;
+//! Forward Declared, defined in game/control/control_scheme_mapper.h
 class ControlSchemeMapper;
+//! Forward Declared, defined in game/world/rails.h
+class Rails;
+//! Forward Declared, defined in game/world/train.h
+class Train;
 
 class Game {
  public:
@@ -18,12 +23,10 @@ class Game {
 
  private:
   bool running_{true};
-  float train_velocity_{0.0f};
-  float train_location_{0.0f};
-
-  Model model_{};
   Camera3D camera_{};
-  std::string active_input_{};
+  std::unique_ptr<Rails> rails_;
+  std::unique_ptr<Train> train_;
+
   std::unique_ptr<InputManagerInterface> input_;
   std::unique_ptr<ControlSchemeMapper> controls_mapper_;
 };

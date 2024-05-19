@@ -15,12 +15,14 @@ Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
   switch (mode) {
     case Mode::kTrain: {
       if (input) {
-        //        return TrainControls{.throttle = input->axes[2].value};
-        return TrainControls{.throttle = input->buttons[static_cast<unsigned>(KeyboardMouseInput::Key::kW)].down ? 1.0f
-                                         : input->buttons[static_cast<unsigned>(KeyboardMouseInput::Key::kS)].down
-                                             ? -1.0f
-                                             : 0.0f};
-
+        if (input->type == Input::Type::kKeyboard) {
+          return TrainControls{.throttle =
+                                   input->buttons[static_cast<unsigned>(KeyboardMouseInput::Key::kW)].down   ? 1.0f
+                                   : input->buttons[static_cast<unsigned>(KeyboardMouseInput::Key::kS)].down ? -1.0f
+                                                                                                             : 0.0f};
+        } else {
+          return TrainControls{.throttle = input->axes[2].value};
+        }
       } else {
         return TrainControls{};
       }

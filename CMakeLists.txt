@@ -5,5 +5,7 @@ project(u-bahn VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+enable_testing()
+
 add_subdirectory(src/third_party/libenjoy)
 add_subdirectory(src)

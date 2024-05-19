@@ -4,50 +4,68 @@
 
 #include "game/control/control_scheme_mapper.h"
 #include "game/input/input_manager_interface.h"
+#include "game/world/rails.h"
+#include "game/world/train.h"
 #include "platform/platform.h"
 
 namespace {
 using Control::TrainControls;
-constexpr float kMaxTrainVelocity{1.0f};
-constexpr float kMinTrainVelocity{-kMaxTrainVelocity};
-
+constexpr float kRailScale{5};
 }  // namespace
 
 Game::Game()
     : input_(InputManagerFactory::Create(Platform::Type::kDesktop)),
-      controls_mapper_(std::make_unique<ControlSchemeMapper>()) {
+      controls_mapper_(std::make_unique<ControlSchemeMapper>()),
+      rails_(std::make_unique<Rails>()) {
   camera_ = {0};
   camera_.position = (::Vector3){10.0f, 10.0f, 10.0f};
   camera_.target = (Vector3){0.0f, 0.0f, 0.0f};
-  camera_.up = (Vector3){0.0f, 1.0f, 0.0f};
+  camera_.up = (Vector3){0.0f, 0.0f, 1.0f};
   camera_.fovy = 45.0f;
   camera_.projection = CAMERA_PERSPECTIVE;
 
-  model_ = LoadModel("/home/menno/Workspace/u-bahn/resources/lowpoly_berlin_u-bahn/untitled.glb");
-
   SetTargetFPS(60);
+
+  // construct a clockwise unit-circle
+  World::WorldSpaceCoordinates rail_point_1{.x = 1.0f * kRailScale, .y = 0.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_1_1{.x = 1.0f * kRailScale, .y = -0.552284749831f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_1_2{.x = 0.552284749831f * kRailScale, .y = -1.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_point_2{.x = 0.0f * kRailScale, .y = -1.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_2_1{.x = -0.552284749831f * kRailScale, .y = -1.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_2_2{.x = -1.0f * kRailScale, .y = -0.552284749831f * kRailScale};
+  World::WorldSpaceCoordinates rail_point_3{.x = -1.0f * kRailScale, .y = 0.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_3_1{.x = -1.0f * kRailScale, .y = 0.552284749831f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_3_2{.x = -0.552284749831f * kRailScale, .y = 1.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_point_4{.x = 0.0f * kRailScale, .y = 1.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_4_1{.x = 0.552284749831f * kRailScale, .y = 1.0f * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_4_2{.x = 1.0f * kRailScale, .y = 0.552284749831f * kRailScale};
+
+  rails_->AddSegment({.id = 1}, {rail_point_1, rail_control_point_1_1, rail_control_point_1_2, rail_point_2}, {.id = 4},
+                     {.id = 2});
+  rails_->AddSegment({.id = 2}, {rail_point_2, rail_control_point_2_1, rail_control_point_2_2, rail_point_3}, {.id = 1},
+                     {.id = 3});
+  rails_->AddSegment({.id = 3}, {rail_point_3, rail_control_point_3_1, rail_control_point_3_2, rail_point_4}, {.id = 2},
+                     {.id = 4});
+  rails_->AddSegment({.id = 4}, {rail_point_4, rail_control_point_4_1, rail_control_point_4_2, rail_point_1}, {.id = 3},
+                     {.id = 1});
+  train_ = std::make_unique<Train>(*rails_, Rails::Location{.segment = {.id = 1}});
 }
 
-Game::~Game() { UnloadModel(model_); }
+Game::~Game() = default;
 
 bool Game::Loop() {
-  BeginDrawing();
+  auto controls_variant = controls_mapper_->Map(input_->Poll(), Control::Mode::kTrain);
+  const auto controls = get<TrainControls>(controls_variant);
+  train_->Control(controls);
 
+  BeginDrawing();
   ClearBackground(RAYWHITE);
 
   BeginMode3D(camera_);
-
-  auto controls_variant = controls_mapper_->Map(input_->Poll(), Control::Mode::kTrain);
-  const auto controls = get<TrainControls>(controls_variant);
-  train_velocity_ += 0.0005f * controls.throttle;
-  train_velocity_ = std::clamp(train_velocity_, kMinTrainVelocity, kMaxTrainVelocity);
-
-  train_location_ += train_velocity_;
-  DrawModel(model_, {train_location_, 0.0f, 0.0f}, 0.1, YELLOW);
-
+  train_->Draw();
   EndMode3D();
-  DrawText(std::format("{} value={}", active_input_, controls.throttle).c_str(), 40, 40, 20, BLACK);
 
+  DrawText(std::format("Velocity={}", train_->Velocity()).c_str(), 40, 40, 20, BLACK);
   EndDrawing();
 
   return !WindowShouldClose();

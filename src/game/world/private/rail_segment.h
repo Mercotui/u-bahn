@@ -26,9 +26,11 @@ class RailSegment {
 
   [[nodiscard]] float Length() const { return curve_length_; }
 
-  TraverseResult Traverse(Rails::Location location, float distance) const;
+  [[nodiscard]] TraverseResult Traverse(Rails::Location location, float distance) const;
 
-  Rails::SegmentId DetermineNext(TraverseDirection direction) const;
+  [[nodiscard]] Rails::SegmentId DetermineNext(TraverseDirection direction) const;
+
+  void DrawDebug();
 
   bool previous_switch{false};
   Rails::SegmentId previous{};

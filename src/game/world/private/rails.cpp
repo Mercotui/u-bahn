@@ -30,11 +30,6 @@ Rails::Location LocationFromIncompleteTraverseResult(
 
   return location;
 }
-
-template <class... Ts>
-struct overloaded : Ts... {
-  using Ts::operator()...;
-};
 }  // namespace
 
 // Constructor and destructor need to be defined here for forwards declaration purposes
@@ -101,4 +96,10 @@ Rails::Location Rails::Traverse(const Rails::Location& initial_location, const f
     }
   }
   return location;
+}
+
+void Rails::DrawDebug() {
+  for (const auto& segment : segments_) {
+    segment.second->DrawDebug();
+  }
 }

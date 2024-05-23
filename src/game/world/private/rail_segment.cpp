@@ -1,6 +1,7 @@
 #include "game/world/private/rail_segment.h"
 
 #include <absl/log/log.h>
+#include <raylib.h>
 
 namespace {
 std::vector<bezier::Point> WorldSpaceCoordinatesTo2dPoints(const std::vector<World::WorldSpaceCoordinates>& points) {
@@ -10,6 +11,15 @@ std::vector<bezier::Point> WorldSpaceCoordinatesTo2dPoints(const std::vector<Wor
   }
   return result;
 }
+
+Vector3 ToRaylibVector3(const bezier::Point& point) {
+  return {.x = static_cast<float>(point.x), .y = static_cast<float>(point.y), .z = 0.0f};
+}
+
+constexpr unsigned kDebugDrawSampleCount{5};
+constexpr float kDebugDrawSphereSize{0.2f};
+constexpr Color kDebugDrawSampleColor{BLUE};
+constexpr Color kDebugDrawControlColor{PURPLE};
 }  // namespace
 
 RailSegment::RailSegment(const std::vector<World::WorldSpaceCoordinates>& curve_points) {
@@ -82,4 +92,22 @@ Rails::SegmentId RailSegment::DetermineNext(const RailSegment::TraverseDirection
     return previous;
   }
   return next;
+}
+
+void RailSegment::DrawDebug() {
+  std::visit(
+      [](auto&& arg) {
+        // Draw curve's control points
+        for (int i = 0; i < arg.size(); i++) {
+          auto current_point = ToRaylibVector3(arg[i]);
+          DrawSphere(current_point, kDebugDrawSphereSize, kDebugDrawControlColor);
+        }
+
+        for (int i = 1; i < kDebugDrawSampleCount; i++) {
+          float t = static_cast<float>(i) / kDebugDrawSampleCount;
+          auto point = ToRaylibVector3(arg.valueAt(t));
+          DrawSphere(point, kDebugDrawSphereSize, kDebugDrawSampleColor);
+        }
+      },
+      curve_);
 }

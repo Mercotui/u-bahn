@@ -23,6 +23,7 @@ class Game {
 
  private:
   bool running_{true};
+  bool show_debug_{false};
   Camera3D camera_{};
   std::unique_ptr<Rails> rails_;
   std::unique_ptr<Train> train_;

@@ -26,6 +26,9 @@ struct TrainControls {
   bool doors_unlock_left{};
   bool doors_unlock_right{};
   bool doors_close{};
+
+  // TODO(Menno 23.05.2024) Move this to the menu options.
+  bool show_debug{};
 };
 
 using Controls = std::variant<MenuControls, TrainControls>;

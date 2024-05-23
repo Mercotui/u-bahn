@@ -70,6 +70,11 @@ class Rails {
    */
   Location Traverse(const Location& initial_location, float requested_distance) const;
 
+  /**
+   * Draw the rail segments in debug mode.
+   */
+  void DrawDebug();
+
  private:
   SegmentMap segments_;
 };

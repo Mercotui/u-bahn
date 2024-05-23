@@ -1,11 +1,15 @@
 #include "game/game.h"
 
+#include <mp-units/format.h>
 #include <raylib.h>
+
+#include <format>
 
 #include "game/control/control_scheme_mapper.h"
 #include "game/input/input_manager_interface.h"
 #include "game/world/rails.h"
 #include "game/world/train.h"
+#include "game/world/units.h"
 #include "platform/platform.h"
 
 namespace {
@@ -55,17 +59,27 @@ Game::~Game() = default;
 
 bool Game::Loop() {
   auto controls_variant = controls_mapper_->Map(input_->Poll(), Control::Mode::kTrain);
+  Units::TimeDelta time = GetFrameTime() * mp_units::si::second;
   const auto controls = get<TrainControls>(controls_variant);
-  train_->Control(controls);
+  if (controls.show_debug) {
+    show_debug_ = !show_debug_;
+  }
+  train_->Control(controls, time);
 
   BeginDrawing();
   ClearBackground(RAYWHITE);
 
   BeginMode3D(camera_);
   train_->Draw();
+  if (show_debug_) {
+    rails_->DrawDebug();
+  }
   EndMode3D();
 
-  DrawText(std::format("Velocity={}", train_->Velocity()).c_str(), 40, 40, 20, BLACK);
+  DrawText(std::format("Velocity={:.1f} km/h",
+                       train_->Speed().numerical_value_in(mp_units::si::kilo<mp_units::si::metre> / mp_units::si::hour))
+               .c_str(),
+           40, 40, 20, BLACK);
   EndDrawing();
 
   return !WindowShouldClose();

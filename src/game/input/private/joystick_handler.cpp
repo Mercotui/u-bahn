@@ -2,12 +2,16 @@
 
 #include <absl/log/log.h>
 
+#include <chrono>
 #include <iostream>
 
 #include "game/input/input.h"
 #include "libenjoy/libenjoy.h"
 
 namespace {
+using std::chrono::steady_clock;
+constexpr auto kScanInterval = std::chrono::seconds(2);
+
 float RemapAxisRange(float value) {
   // low2 + (pressed - low1) * (high2 - low2) / (high1 - low1)
   return -1.0f + (value + 32767.0f) * 2.0f / (32767.0f * 2.0f);
@@ -30,6 +34,10 @@ JoystickHandler::~JoystickHandler() {
 }
 
 InputList JoystickHandler::Poll() {
+  if ((scan_timestamp_ + kScanInterval) < steady_clock::now()) {
+    CheckReconnect();
+  }
+
   // clear all activity flags
   for (auto& input : joystick_inputs_) {
     input.second->active = false;
@@ -94,7 +102,7 @@ void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value, InputAxi
   auto& axis_ref = input_it->second->axes[axis];
   axis_ref.value = RemapAxisRange(static_cast<float>(value));
 
-  auto activity_it = axis_activity_.find(JoystickAxisKey(id, axis));
+  auto activity_it = axis_activity_.find(JoystickAxisKey{.id = id, .axis = axis});
   if (activity_it == axis_activity_.end()) {
     axis_ref.active = false;
     return;
@@ -119,18 +127,38 @@ void JoystickHandler::HandleButton(unsigned id, unsigned button, bool pressed) {
 
 void JoystickHandler::HandleConnection(unsigned id, bool connected) {
   if (!connected) {
-    Close(id);
+    if (joysticks_.contains(id)) {
+      // Note that we keep track of the joysticks that were open when they get disconnected,
+      // so that we can reopen them in case they get re-connected.
+      reconnect_joysticks_.insert(id);
+      Close(id);
+    }
+
     if (const auto input_it = joystick_inputs_.find(id); input_it != joystick_inputs_.end()) {
       const auto axes_count = input_it->second->axes.size();
       for (auto axis_index = 0; axis_index < axes_count; axis_index++) {
         // remove the axis activity detectors registered for this joystick
         axis_activity_.erase(JoystickAxisKey(id, axis_index));
       }
+      joystick_inputs_.erase(input_it);
     }
   }
 }
 
+void JoystickHandler::CheckReconnect() {
+  ScanAll();
+  // Open any detected joysticks that should be reconnected
+  std::erase_if(reconnect_joysticks_, [&](const auto& id) {
+    if (joystick_inputs_.contains(id)) {
+      Open(id);
+      return true;
+    }
+    return false;
+  });
+}
+
 void JoystickHandler::ScanAll() {
+  scan_timestamp_ = steady_clock::now();
   libenjoy_enumerate(joy_context_);
   auto list = libenjoy_get_info_list(joy_context_);
 
@@ -148,7 +176,7 @@ void JoystickHandler::ScanAll() {
   libenjoy_free_info_list(list);
 }
 
-void JoystickHandler::Scan(unsigned id) {
+void JoystickHandler::ScanFeatures(unsigned id) {
   auto input_it = joystick_inputs_.find(id);
   if (input_it == joystick_inputs_.end()) {
     return;
@@ -191,9 +219,8 @@ void JoystickHandler::Open(unsigned id) {
   }
   joysticks_.emplace(id, joystick_raw);
 
-  Scan(id);
+  ScanFeatures(id);
 }
-
 void JoystickHandler::Close(unsigned int id) {
   auto joystick_raw_it = joysticks_.find(id);
   if (joystick_raw_it == joysticks_.end()) {

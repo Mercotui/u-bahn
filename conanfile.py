@@ -22,9 +22,9 @@ class UBahnRecipe(ConanFile):
         #    -o glfw/*:with_x11=False -o glfw/*:with_wayland=True
         #    -o xkbcommon/*:with_x11=False -o xkbcommon/*:with_wayland=True
         #   To export package with out building it:
-        #    cd conan-center-index/recipes/raylib/all$
-        #    conan export . --version "5.x"
-        self.requires("raylib/5.x#d7043addbfc85a89e0081903f6f7d359")
+        #    cd conan-center-index/recipes/raylib/all
+        #    conan export . --version "5.0"
+        self.requires("raylib/5.0#3ba2ff34f19ef878e919de87156da5a1")
 
         self.requires("glm/cci.20230113")
         self.requires("bezier/0.2.1")

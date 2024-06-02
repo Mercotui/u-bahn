@@ -9,7 +9,11 @@
 #include "game/input/input.h"
 #include "game/input/input_manager_interface.h"
 #include "game/input/private/input_axis_helpers.h"
-#include "libenjoy/libenjoy.h"
+
+//! Forward declared, defined in libenjoy.h
+struct libenjoy_context;
+//! Forward declared, defined in libenjoy.h
+struct libenjoy_joystick;
 
 class JoystickHandler final : public InputManagerInterface {
  public:

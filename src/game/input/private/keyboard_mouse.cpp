@@ -1,5 +1,10 @@
 #include "game/input/keyboard_mouse.h"
 
+#include <absl/log/log.h>
+
+#include <format>
+#include <type_traits>
+
 std::string KeyboardMouseInput::KeyName(KeyboardMouseInput::Key key) {
   switch (key) {
     case Key::kApostrophe: {
@@ -330,7 +335,7 @@ std::string KeyboardMouseInput::KeyName(KeyboardMouseInput::Key key) {
       return "Volume Down";
     }
     default: {
-      return "Unknown Key";
+      return std::format("Unknown Key {}", static_cast<std::underlying_type<Key>::type>(key));
     }
   }
 }
@@ -357,6 +362,9 @@ std::string KeyboardMouseInput::MouseButtonName(KeyboardMouseInput::MouseButton 
     }
     case MouseButton::kBack: {
       return "Mouse Button Back";
+    }
+    default: {
+      return std::format("Unknown Button {}", static_cast<std::underlying_type<MouseButton>::type>(button));
     }
   }
 }

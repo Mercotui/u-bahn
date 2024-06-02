@@ -5,7 +5,9 @@
 #include <iostream>
 
 #include "game/input/input.h"
+#if defined(HAS_LIB_GAME_INPUT_JOYSTICK)
 #include "game/input/private/joystick_handler.h"
+#endif
 #include "game/input/private/raylib_input_handlers.h"
 #include "platform/platform.h"
 
@@ -26,7 +28,9 @@ std::unique_ptr<InputManagerInterface> Create(Platform::Type platform) {
     case Platform::Type::kDesktop: {
       handlers.emplace(Input::Type::kKeyboard, std::make_unique<RaylibInputHandlers::Keyboard>());
       handlers.emplace(Input::Type::kMouse, std::make_unique<RaylibInputHandlers::Mouse>());
+#if defined(HAS_LIB_GAME_INPUT_JOYSTICK)
       handlers.emplace(Input::Type::kJoystick, std::make_unique<JoystickHandler>());
+#endif
       break;
     }
   }

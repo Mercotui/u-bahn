@@ -7,5 +7,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
 
-add_subdirectory(src/third_party/libenjoy)
 add_subdirectory(src)

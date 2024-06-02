@@ -1,5 +1,9 @@
 #include "game/input/private/raylib_input_helpers.h"
 
+#include <absl/log/log.h>
+
+#include <type_traits>
+
 namespace {
 using KeyboardMouseInput::Key;
 }  // namespace
@@ -361,6 +365,11 @@ MouseButton RaylibInputHelpers::RaylibMouseButton(KeyboardMouseInput::MouseButto
     }
     case KeyboardMouseInput::MouseButton::kBack: {
       return MOUSE_BUTTON_BACK;
+    }
+    default: {
+      LOG(FATAL) << "RaylibMouseButton trying to convert unknown value button"
+                 << static_cast<std::underlying_type<MouseButton>::type>(button);
+      return MOUSE_BUTTON_LEFT;
     }
   }
 }

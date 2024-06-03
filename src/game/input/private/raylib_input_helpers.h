@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include <map>
+#include <optional>
 #include <string>
 
 #include "game/input/keyboard_mouse.h"
@@ -13,5 +14,5 @@ namespace RaylibInputHelpers {
 KeyboardKey RaylibKeyboardKey(KeyboardMouseInput::Key key);
 
 //! Lookup table for mouse button codes.
-MouseButton RaylibMouseButton(KeyboardMouseInput::MouseButton button);
+std::optional<MouseButton> RaylibMouseButton(KeyboardMouseInput::MouseButton button);
 }  // namespace RaylibInputHelpers

@@ -368,3 +368,20 @@ std::string KeyboardMouseInput::MouseButtonName(KeyboardMouseInput::MouseButton 
     }
   }
 }
+
+std::string KeyboardMouseInput::MouseAxisName(KeyboardMouseInput::MouseAxis axis) {
+  switch (axis) {
+    case MouseAxis::kX: {
+      return "Mouse Axis Horizontal";
+    }
+    case MouseAxis::kY: {
+      return "Mouse Axis Vertical";
+    }
+    case MouseAxis::kWheel: {
+      return "Mouse Wheel";
+    }
+    default: {
+      return std::format("Unknown Axis {}", static_cast<std::underlying_type<MouseAxis>::type>(axis));
+    }
+  }
+}

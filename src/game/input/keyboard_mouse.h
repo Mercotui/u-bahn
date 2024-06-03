@@ -126,10 +126,12 @@ enum class Key : unsigned {
   kAndroidVolumeDown,  ///< Key: Android volume down button
 
   // Meta data
-  kEnumKeySize  ///< size of key enum
+  kEnumKeySize  ///< size of Key enum
 };
 
 enum class MouseButton : unsigned {
+  kUnspecified = 0,  ///< Non-valid button
+
   kLeft,     ///< Mouse button left
   kRight,    ///< Mouse button right
   kMiddle,   ///< Mouse button middle (pressed wheel)
@@ -137,6 +139,20 @@ enum class MouseButton : unsigned {
   kExtra,    ///< Mouse button extra (advanced mouse device)
   kForward,  ///< Mouse button forward (advanced mouse device)
   kBack,     ///< Mouse button back (advanced mouse device)
+
+  // Meta data
+  kEnumMouseButtonSize  ///< size of MouseButton enum
+};
+
+enum class MouseAxis : unsigned {
+  kUnspecified = 0,  ///< Non-valid axis
+
+  kX,      ///< Mouse axis horizontal
+  kY,      ///< Mouse axis vertical
+  kWheel,  ///< Mouse wheel
+
+  // Meta data
+  kEnumMouseAxisSize  ///< size of MouseAxis enum
 };
 
 /**
@@ -152,4 +168,11 @@ std::string KeyName(Key key);
  * @return the name of the mouse button
  */
 std::string MouseButtonName(MouseButton button);
+
+/**
+ * Lookup the name of a mouse axis
+ * @param axis the axis to find the name for
+ * @return the name of the mouse axis
+ */
+std::string MouseAxisName(MouseAxis axis);
 }  // namespace KeyboardMouseInput

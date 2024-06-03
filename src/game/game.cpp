@@ -18,7 +18,7 @@ constexpr float kRailScale{5};
 }  // namespace
 
 Game::Game()
-    : input_(InputManagerFactory::Create(Platform::Type::kDesktop)),
+    : input_(InputManagerFactory::Create(Platform::GetPlatform())),
       controls_mapper_(std::make_unique<ControlSchemeMapper>()),
       rails_(std::make_unique<Rails>()) {
   camera_ = {0};

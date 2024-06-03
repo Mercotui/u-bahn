@@ -4,11 +4,6 @@ find_package(absl REQUIRED)
 include(cmake/resources.cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory(platform)
-add_subdirectory(game/input)
-add_subdirectory(game/control)
-add_subdirectory(game/world)
-
 add_executable(u-bahn
         main.cpp
         game/game.cpp
@@ -30,6 +25,11 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
 else ()
     add_subdirectory(third_party/libenjoy)
 endif ()
+
+add_subdirectory(platform)
+add_subdirectory(game/input)
+add_subdirectory(game/control)
+add_subdirectory(game/world)
 
 target_link_libraries(u-bahn PRIVATE raylib abseil::abseil platform Game::Input Game::Control Game::World)
 target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)

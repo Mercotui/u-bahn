@@ -11,5 +11,5 @@ constexpr Platform::Type kPlatformType = Platform::Type::kWeb;
 }  // namespace
 
 namespace Platform {
-constexpr Type GetPlatform() { return kPlatformType; }
+Type GetPlatform() { return kPlatformType; }
 }  // namespace Platform

@@ -343,7 +343,7 @@ KeyboardKey RaylibInputHelpers::RaylibKeyboardKey(KeyboardMouseInput::Key key) {
   }
 }
 
-MouseButton RaylibInputHelpers::RaylibMouseButton(KeyboardMouseInput::MouseButton button) {
+std::optional<MouseButton> RaylibInputHelpers::RaylibMouseButton(KeyboardMouseInput::MouseButton button) {
   switch (button) {
     case KeyboardMouseInput::MouseButton::kLeft: {
       return MOUSE_BUTTON_LEFT;
@@ -367,9 +367,7 @@ MouseButton RaylibInputHelpers::RaylibMouseButton(KeyboardMouseInput::MouseButto
       return MOUSE_BUTTON_BACK;
     }
     default: {
-      LOG(FATAL) << "RaylibMouseButton trying to convert unknown value button"
-                 << static_cast<std::underlying_type<MouseButton>::type>(button);
-      return MOUSE_BUTTON_LEFT;
+      return std::nullopt;
     }
   }
 }

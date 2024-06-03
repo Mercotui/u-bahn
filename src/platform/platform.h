@@ -3,5 +3,5 @@
 namespace Platform {
 enum class Type { kAndroid, kDesktop, kWeb };
 
-constexpr Type GetPlatform();
+Type GetPlatform();
 }  // namespace Platform

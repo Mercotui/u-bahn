@@ -1,6 +1,7 @@
 find_package(raylib 5.0 REQUIRED)
 find_package(absl REQUIRED)
 
+include(cmake/resources.cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(platform)
@@ -24,8 +25,6 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
             # TODO(Menno 02.06.2024) This option is introduced emsdk 3.1.51
             # -sGL_ENABLE_GET_PROC_ADDRESS=1
             --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/platform/emscripten/shell.html
-            "--preload-file /home/menno/Workspace/u-bahn/resources/lowpoly_berlin_u-bahn/untitled.glb\
-            @/home/menno/Workspace/u-bahn/resources/lowpoly_berlin_u-bahn/untitled.glb"
     )
     set_target_properties(u-bahn PROPERTIES SUFFIX ".html")
 else ()
@@ -33,6 +32,7 @@ else ()
 endif ()
 
 target_link_libraries(u-bahn PRIVATE raylib abseil::abseil platform Game::Input Game::Control Game::World)
+target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)
 
 include(GNUInstallDirs)
 install(TARGETS u-bahn

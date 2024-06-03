@@ -24,7 +24,7 @@ constexpr float kModelScale{0.3f};
 
 Train::Train(const Rails& rails, Rails::Location location)
     : rails_(rails), location_(std::make_pair(location, location)) {
-  model_ = LoadModel("/home/menno/Workspace/u-bahn/resources/lowpoly_berlin_u-bahn/untitled.glb");
+  model_ = LoadModel("resources/lowpoly_berlin_u-bahn/untitled.glb");
 }
 
 Train::~Train() { UnloadModel(model_); }

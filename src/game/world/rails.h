@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "game/world/rails.h"
 #include "game/world/world.h"
 
 //! Forward declared, defined in game/world/rail_segment.h
@@ -40,7 +41,7 @@ class Rails {
    */
   struct Location {
     SegmentId segment{NullSegmentId};
-    float intra_segment_location{};
+    Units::Distance intra_segment_location{};
 
     [[nodiscard]] bool operator==(const Location& other) const {
       return segment == other.segment && intra_segment_location == other.intra_segment_location;
@@ -68,7 +69,7 @@ class Rails {
    * @param requested_distance
    * @return
    */
-  Location Traverse(const Location& initial_location, float requested_distance) const;
+  Location Traverse(const Location& initial_location, Units::Distance requested_distance) const;
 
   /**
    * Draw the rail segments in debug mode.

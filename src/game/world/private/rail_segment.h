@@ -15,18 +15,18 @@ class RailSegment {
   struct TraverseIncompleteResult {
     Rails::SegmentId next_segment;
     TraverseDirection direction_in_next_segment{};
-    float remainder{};
+    Units::Distance remainder{};
   };
   using TraverseResult = std::variant<TraverseCompletionResult, TraverseIncompleteResult>;
 
   explicit RailSegment(const std::vector<World::WorldSpaceCoordinates>& curve_points);
   ~RailSegment();
 
-  [[nodiscard]] World::WorldSpaceCoordinates WorldSpace(float location_in_segment) const;
+  [[nodiscard]] World::WorldSpaceCoordinates WorldSpace(Units::Distance location_in_segment) const;
 
-  [[nodiscard]] float Length() const { return curve_length_; }
+  [[nodiscard]] Units::Distance Length() const { return curve_length_; }
 
-  [[nodiscard]] TraverseResult Traverse(Rails::Location location, float distance) const;
+  [[nodiscard]] TraverseResult Traverse(Rails::Location location, Units::Distance distance) const;
 
   [[nodiscard]] Rails::SegmentId DetermineNext(TraverseDirection direction) const;
 
@@ -43,7 +43,7 @@ class RailSegment {
 
  private:
   // TODO(Menno 19.05.2024) Add changeable height  to rail segments
-  float height_{};
-  float curve_length_{};
+  World::Coordinate height_{};
+  Units::Distance curve_length_{};
   std::variant<bezier::Bezier<1>, bezier::Bezier<2>, bezier::Bezier<3>> curve_;
 };

@@ -79,9 +79,9 @@ Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
 std::shared_ptr<Input> ControlSchemeMapper::GetActiveInput(const std::vector<std::shared_ptr<Input>>& inputs) {
   for (const auto& input : inputs) {
     // if (input->type == Input::Type::kJoystick && input->id == 1) {
-    // if (input->type == Input::Type::kKeyboard) {
-    // if (input->type == Input::Type::kMouse) {
-    if (input->type == Input::Type::kTouch) {
+    if (input->type == Input::Type::kKeyboard) {
+      // if (input->type == Input::Type::kMouse) {
+      // if (input->type == Input::Type::kTouch) {
       return input;
     }
   }

@@ -4,6 +4,7 @@
 #include <raymath.h>
 
 #include "game/world/units.h"
+#include "game/world/world.h"
 
 namespace {
 using Control::TrainControls;
@@ -20,6 +21,19 @@ constexpr auto kTrainMaxDeceleration = 5.0 * (metre / (second * second));
 constexpr auto kTrainMinimumReverseSpeed = quantity(0.1 * kilo<metre> / hour).in(metre / second);
 
 constexpr float kModelScale{0.3f};
+constexpr Vector3 kModelScale3D{kModelScale, kModelScale, kModelScale};
+constexpr Vector3 kModelRotationAxis{0.0, 0.0, 1.0};
+
+float fToNumericalFromOrigin(World::Coordinate coordinate) {
+  return static_cast<float>(coordinate.quantity_from(World::origin).numerical_value_in(metre));
+}
+
+Vector3 ToRaylibVector3(const World::WorldSpaceCoordinates& world_space_coordinates) {
+  float x = fToNumericalFromOrigin(world_space_coordinates.x);
+  float y = fToNumericalFromOrigin(world_space_coordinates.y);
+  float z = fToNumericalFromOrigin(world_space_coordinates.z);
+  return {.x = x, .y = y, .z = z};
+}
 }  // namespace
 
 Train::Train(const Rails& rails, Rails::Location location)
@@ -42,22 +56,21 @@ void Train::Control(const TrainControls& controls, const Units::TimeDelta time) 
 
   auto distance = speed_ * time * direction_;
   // TODO(Menno 23.05.2024) Let rails use Units::Distance in metre.
-  auto new_location = rails_.Traverse(location_.first, static_cast<float>(distance.numerical_value_in(metre)));
+  auto new_location = rails_.Traverse(location_.first, distance);
   if (new_location == location_.first) {
     speed_ = 0.0 * metre / second;
   }
   location_.first = new_location;
-  location_.second = rails_.Traverse(location_.first, -0.5f);
+  location_.second = rails_.Traverse(location_.first, -0.5f * metre);
 }
 
 void Train::Draw() const {
   const auto position_1 = rails_.WorldSpace(location_.first);
   const auto position_2 = rails_.WorldSpace(location_.second);
 
-  Vector2 point_1{.x = position_1.x, .y = position_1.y};
-  Vector2 point_2{.x = position_2.x, .y = position_2.y};
-  Vector2 point_tmp = Vector2Subtract(point_2, point_1);
+  Vector3 point_1 = ToRaylibVector3(position_1);
+  Vector3 point_2 = ToRaylibVector3(position_2);
+  Vector3 point_tmp = Vector3Subtract(point_2, point_1);
   float angle = (atan2(point_tmp.y, point_tmp.x) * (180.0f / PI)) - 90.0f;
-  DrawModelEx(model_, {position_1.x, position_1.y, position_1.z}, {0.0, 0.0, 1.0}, angle,
-              {kModelScale, kModelScale, kModelScale}, YELLOW);
+  DrawModelEx(model_, point_1, kModelRotationAxis, angle, kModelScale3D, YELLOW);
 }

@@ -9,12 +9,14 @@
 #include "game/world/world.h"
 
 namespace {
+using mp_units::si::metre;
+
 //! This is a massive maximum traversal limit, just to help debugging in case of an infinite loop.
 constexpr unsigned kMaxTraverseIterations{10000};
 
 Rails::Location LocationFromIncompleteTraverseResult(
     const Rails::SegmentMap& segments, const RailSegment::TraverseIncompleteResult& incomplete_traverse_result) {
-  Rails::Location location{.segment = incomplete_traverse_result.next_segment, .intra_segment_location = 0.0f};
+  Rails::Location location{.segment = incomplete_traverse_result.next_segment, .intra_segment_location = 0.0 * metre};
 
   if (incomplete_traverse_result.direction_in_next_segment == RailSegment::TraverseDirection::kForward) {
     return location;
@@ -60,19 +62,21 @@ World::WorldSpaceCoordinates Rails::WorldSpace(const Rails::Location& location) 
   return segment->second->WorldSpace(location.intra_segment_location);
 }
 
-Rails::Location Rails::Traverse(const Rails::Location& initial_location, const float requested_distance) const {
-  float remainder = requested_distance;
+Rails::Location Rails::Traverse(const Rails::Location& initial_location,
+                                const Units::Distance requested_distance) const {
+  Units::Distance remainder = requested_distance;
   Location location = initial_location;
 
   unsigned iterations{0};
-  while (remainder != 0.0f) {
+  while (remainder != 0.0 * metre) {
     if (kMaxTraverseIterations < iterations++) {
       LOG(ERROR) << "Giving up on traversal after " << kMaxTraverseIterations
                  << " iterations.\ninitial_location{ segment=" << initial_location.segment.id
-                 << ", intra_segment_location=" << initial_location.intra_segment_location
-                 << "}\n requested_distance=" << requested_distance
+                 << ", intra_segment_location=" << initial_location.intra_segment_location.numerical_value_in(metre)
+                 << "}\n requested_distance=" << requested_distance.numerical_value_in(metre)
                  << "\n location{ segment=" << initial_location.segment.id
-                 << ", intra_segment_location=" << initial_location.intra_segment_location << "}";
+                 << ", intra_segment_location=" << initial_location.intra_segment_location.numerical_value_in(metre)
+                 << "}";
       return initial_location;
     }
     const auto segment_it = segments_.find(location.segment);
@@ -89,7 +93,7 @@ Rails::Location Rails::Traverse(const Rails::Location& initial_location, const f
       location = LocationFromIncompleteTraverseResult(segments_, incomplete_traverse_result);
     } else if (std::holds_alternative<RailSegment::TraverseCompletionResult>(traverse_result)) {
       location = std::get<RailSegment::TraverseCompletionResult>(traverse_result);
-      remainder = 0.0f;
+      remainder = 0.0 * metre;
     } else {
       LOG(ERROR) << "Unknown result from traversing rail segment";
       return initial_location;

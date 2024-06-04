@@ -14,7 +14,7 @@
 
 namespace {
 using Control::TrainControls;
-constexpr float kRailScale{5};
+constexpr auto kRailScale{5 * mp_units::si::metre};
 }  // namespace
 
 Game::Game()
@@ -31,18 +31,30 @@ Game::Game()
   SetTargetFPS(60);
 
   // construct a clockwise unit-circle
-  World::WorldSpaceCoordinates rail_point_1{.x = 1.0f * kRailScale, .y = 0.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_1_1{.x = 1.0f * kRailScale, .y = -0.552284749831f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_1_2{.x = 0.552284749831f * kRailScale, .y = -1.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_point_2{.x = 0.0f * kRailScale, .y = -1.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_2_1{.x = -0.552284749831f * kRailScale, .y = -1.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_2_2{.x = -1.0f * kRailScale, .y = -0.552284749831f * kRailScale};
-  World::WorldSpaceCoordinates rail_point_3{.x = -1.0f * kRailScale, .y = 0.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_3_1{.x = -1.0f * kRailScale, .y = 0.552284749831f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_3_2{.x = -0.552284749831f * kRailScale, .y = 1.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_point_4{.x = 0.0f * kRailScale, .y = 1.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_4_1{.x = 0.552284749831f * kRailScale, .y = 1.0f * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_4_2{.x = 1.0f * kRailScale, .y = 0.552284749831f * kRailScale};
+  World::WorldSpaceCoordinates rail_point_1{.x = World::origin + 1.0 * kRailScale,
+                                            .y = World::origin + 0.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_1_1{.x = World::origin + 1.0 * kRailScale,
+                                                      .y = World::origin + -0.552284749831 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_1_2{.x = World::origin + 0.552284749831 * kRailScale,
+                                                      .y = World::origin + -1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_point_2{.x = World::origin + 0.0 * kRailScale,
+                                            .y = World::origin + -1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_2_1{.x = World::origin + -0.552284749831 * kRailScale,
+                                                      .y = World::origin + -1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_2_2{.x = World::origin + -1.0f * kRailScale,
+                                                      .y = World::origin + -0.552284749831 * kRailScale};
+  World::WorldSpaceCoordinates rail_point_3{.x = World::origin + -1.0 * kRailScale,
+                                            .y = World::origin + 0.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_3_1{.x = World::origin + -1.0f * kRailScale,
+                                                      .y = World::origin + 0.552284749831 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_3_2{.x = World::origin + -0.552284749831 * kRailScale,
+                                                      .y = World::origin + 1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_point_4{.x = World::origin + 0.0 * kRailScale,
+                                            .y = World::origin + 1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_4_1{.x = World::origin + 0.552284749831 * kRailScale,
+                                                      .y = World::origin + 1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_4_2{.x = World::origin + 1.0 * kRailScale,
+                                                      .y = World::origin + 0.552284749831 * kRailScale};
 
   rails_->AddSegment({.id = 1}, {rail_point_1, rail_control_point_1_1, rail_control_point_1_2, rail_point_2}, {.id = 4},
                      {.id = 2});

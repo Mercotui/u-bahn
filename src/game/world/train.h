@@ -1,7 +1,5 @@
 #pragma once
 
-#include <raylib.h>
-
 #include <array>
 #include <memory>
 #include <utility>
@@ -10,6 +8,9 @@
 #include "game/world/rails.h"
 #include "game/world/units.h"
 
+//! Forward Declared, defined in raylib.h
+class Model;
+
 class Train {
  public:
   explicit Train(const Rails& rails, Rails::Location location);
@@ -17,6 +18,7 @@ class Train {
 
   void Control(const Control::TrainControls& controls, Units::TimeDelta time);
   [[nodiscard]] Units::Speed Speed() const { return speed_; }
+  World::WorldSpaceCoordinates WorldSpaceLocation() const;
 
   void Draw() const;
 
@@ -26,5 +28,5 @@ class Train {
   double direction_{1.0};
   Units::Speed speed_{};
 
-  Model model_{};
+  std::unique_ptr<Model> model_{};
 };

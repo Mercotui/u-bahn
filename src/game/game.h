@@ -7,12 +7,15 @@
 
 //! Forward Declared, defined in game/input/input_manager_interface.h
 class InputManagerInterface;
+
 //! Forward Declared, defined in game/control/control_scheme_mapper.h
 class ControlSchemeMapper;
 //! Forward Declared, defined in game/world/rails.h
 class Rails;
 //! Forward Declared, defined in game/world/train.h
 class Train;
+//! Forward Declared, defined in game/script/script_interpreter.h
+class ScriptInterpreter;
 
 class Game {
  public:
@@ -30,4 +33,6 @@ class Game {
 
   std::unique_ptr<InputManagerInterface> input_;
   std::unique_ptr<ControlSchemeMapper> controls_mapper_;
+
+  std::unique_ptr<ScriptInterpreter> script_;
 };

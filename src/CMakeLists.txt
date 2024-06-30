@@ -30,8 +30,9 @@ add_subdirectory(platform)
 add_subdirectory(game/input)
 add_subdirectory(game/control)
 add_subdirectory(game/world)
+add_subdirectory(game/script)
 
-target_link_libraries(u-bahn PRIVATE raylib abseil::abseil platform Game::Input Game::Control Game::World)
+target_link_libraries(u-bahn PRIVATE raylib abseil::abseil platform Game::Input Game::Control Game::World Game::Script)
 target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)
 
 include(GNUInstallDirs)

@@ -7,6 +7,7 @@
 
 #include "game/control/control_scheme_mapper.h"
 #include "game/input/input_manager_interface.h"
+#include "game/script/script_interpreter.h"
 #include "game/world/rails.h"
 #include "game/world/train.h"
 #include "game/world/units.h"
@@ -20,7 +21,8 @@ constexpr auto kRailScale{5 * mp_units::si::metre};
 Game::Game()
     : input_(InputManagerFactory::Create(Platform::GetPlatform())),
       controls_mapper_(std::make_unique<ControlSchemeMapper>()),
-      rails_(std::make_unique<Rails>()) {
+      rails_(std::make_unique<Rails>()),
+      script_(std::make_unique<ScriptInterpreter>("resources/levels/test.lua")) {
   camera_ = {0};
   camera_.position = (::Vector3){10.0f, 10.0f, 10.0f};
   camera_.target = (Vector3){0.0f, 0.0f, 0.0f};
@@ -77,6 +79,7 @@ bool Game::Loop() {
     show_debug_ = !show_debug_;
   }
   train_->Control(controls, time);
+  script_->CheckTriggers(*train_);
 
   BeginDrawing();
   ClearBackground(RAYWHITE);
@@ -85,6 +88,7 @@ bool Game::Loop() {
   train_->Draw();
   if (show_debug_) {
     rails_->DrawDebug();
+    script_->DrawDebug();
   }
   EndMode3D();
 

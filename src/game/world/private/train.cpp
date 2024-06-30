@@ -38,10 +38,10 @@ Vector3 ToRaylibVector3(const World::WorldSpaceCoordinates& world_space_coordina
 
 Train::Train(const Rails& rails, Rails::Location location)
     : rails_(rails), location_(std::make_pair(location, location)) {
-  model_ = LoadModel("resources/lowpoly_berlin_u-bahn/untitled.glb");
+  model_ = std::make_unique<Model>(std::move(LoadModel("resources/lowpoly_berlin_u-bahn/untitled.glb")));
 }
 
-Train::~Train() { UnloadModel(model_); }
+Train::~Train() { UnloadModel(*model_); }
 
 void Train::Control(const TrainControls& controls, const Units::TimeDelta time) {
   if (controls.reverse && speed_ < kTrainMinimumReverseSpeed) {
@@ -64,6 +64,8 @@ void Train::Control(const TrainControls& controls, const Units::TimeDelta time) 
   location_.second = rails_.Traverse(location_.first, -0.5f * metre);
 }
 
+World::WorldSpaceCoordinates Train::WorldSpaceLocation() const { return rails_.WorldSpace(location_.first); }
+
 void Train::Draw() const {
   const auto position_1 = rails_.WorldSpace(location_.first);
   const auto position_2 = rails_.WorldSpace(location_.second);
@@ -72,5 +74,5 @@ void Train::Draw() const {
   Vector3 point_2 = ToRaylibVector3(position_2);
   Vector3 point_tmp = Vector3Subtract(point_2, point_1);
   float angle = (atan2(point_tmp.y, point_tmp.x) * (180.0f / PI)) - 90.0f;
-  DrawModelEx(model_, point_1, kModelRotationAxis, angle, kModelScale3D, YELLOW);
+  DrawModelEx(*model_, point_1, kModelRotationAxis, angle, kModelScale3D, YELLOW);
 }

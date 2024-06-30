@@ -25,11 +25,12 @@ class UBahnRecipe(ConanFile):
         #    cd conan-center-index/recipes/raylib/all
         #    conan export . --version "5.0"
         self.requires("raylib/5.0#3ba2ff34f19ef878e919de87156da5a1")
+        self.requires("sol2/3.3.1")
+        # self.requires("nlohmann_json/3.11.3")
 
         self.requires("glm/cci.20230113")
         self.requires("bezier/0.2.1")
         self.requires("mp-units/2.1.1")
-        # self.requires("nlohmann_json/3.11.3")
 
     def layout(self):
         cmake_layout(self)

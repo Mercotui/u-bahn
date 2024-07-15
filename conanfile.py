@@ -14,6 +14,7 @@ class UBahnRecipe(ConanFile):
 
     def requirements(self):
         self.requires("gtest/1.14.0")
+        self.requires("benchmark/1.8.4")
         self.requires("abseil/20240116.2")
 
         # TODO(Menno 23.04.2024) This reference is my custom package, I intend to upstream it:

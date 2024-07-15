@@ -4,6 +4,7 @@ find_package(raylib 5.0 REQUIRED)
 find_package(glm REQUIRED)
 find_package(bezier REQUIRED)
 find_package(mp-units REQUIRED)
+find_package(benchmark REQUIRED)
 
 add_library(game_world STATIC
         private/rail_segment.cpp
@@ -20,3 +21,7 @@ add_executable(world_test
 )
 target_link_libraries(world_test PRIVATE raylib game_world GTest::gtest GTest::gtest_main)
 add_test(NAME world_test COMMAND world_test)
+
+add_executable(world_benchmark
+        private/rails_benchmark.cpp)
+target_link_libraries(world_benchmark raylib game_world benchmark::benchmark)

@@ -64,7 +64,7 @@ Game::Game()
                      {.id = 4});
   rails_->AddSegment({.id = 4}, {rail_point_4, rail_control_point_4_1, rail_control_point_4_2, rail_point_1}, {.id = 3},
                      {.id = 1});
-  train_ = std::make_unique<Train>(*rails_, Rails::Location{.segment = {.id = 1}});
+  train_ = std::make_unique<Train>(*rails_, Rails::Location{.segment = {.id = 1}}, 4);
 }
 
 Game::~Game() = default;

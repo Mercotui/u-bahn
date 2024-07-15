@@ -5,6 +5,7 @@
 #include <array>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "game/control/control.h"
 #include "game/world/rails.h"
@@ -12,7 +13,7 @@
 
 class Train {
  public:
-  explicit Train(const Rails& rails, Rails::Location location);
+  explicit Train(const Rails& rails, Rails::Location location, int car_count);
   ~Train();
 
   void Control(const Control::TrainControls& controls, Units::TimeDelta time);
@@ -22,7 +23,8 @@ class Train {
 
  private:
   const Rails& rails_;
-  std::pair<Rails::Location, Rails::Location> location_;
+  using Car = std::pair<Rails::Location, Rails::Location>;
+  std::vector<Car> cars_;
   double direction_{1.0};
   Units::Speed speed_{};
 

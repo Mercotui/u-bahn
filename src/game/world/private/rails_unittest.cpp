@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <mp-units/math.h>
 
+#include <numbers>
 #include <source_location>
 
 namespace {
@@ -16,14 +17,14 @@ constexpr auto kDistanceEpsilon = 0.00001 * metre;
 //! It seems mp_units does not have a "near equals", or at least it is not yet documented.
 void ExpectNear(Units::Distance lhs, Units::Distance rhs, Units::Distance epsilon = kDistanceEpsilon,
                 std::source_location callee = std::source_location::current()) {
-  ScopedTrace trace(callee.file_name(), callee.line(), "Failure occurred here");
+  ScopedTrace trace(callee.file_name(), static_cast<int>(callee.line()), "Failure occurred here");
   EXPECT_LE(mp_units::abs(lhs - rhs), epsilon);
 }
 
 //! It seems mp_units does not have a "near equals", or at least it is not yet documented.
 void ExpectNear(WorldSpaceCoordinates lhs, WorldSpaceCoordinates rhs, Units::Distance epsilon = kDistanceEpsilon,
                 std::source_location callee = std::source_location::current()) {
-  ScopedTrace trace(callee.file_name(), callee.line(), "Failure occurred here");
+  ScopedTrace trace(callee.file_name(), static_cast<int>(callee.line()), "Failure occurred here");
   EXPECT_LE(mp_units::abs(lhs.x - rhs.x), epsilon);
   EXPECT_LE(mp_units::abs(lhs.y - rhs.y), epsilon);
   EXPECT_LE(mp_units::abs(lhs.z - rhs.z), epsilon);
@@ -39,6 +40,7 @@ TEST(RailsTest, TraverseSingle) {
   rails.AddSegment(id, {start_point, end_point});
 
   struct Data {
+    std::source_location src_loc = std::source_location::current();
     Units::Distance start{};
     Units::Distance distance{};
     Units::Distance result{};
@@ -56,6 +58,8 @@ TEST(RailsTest, TraverseSingle) {
   };
 
   for (const auto& data : test_data) {
+    ScopedTrace trace(data.src_loc.file_name(), static_cast<int>(data.src_loc.line()), "Expectation declared here");
+
     // create a location at the start of this rail segment
     Rails::Location start_location{.segment = {.id = 1}, .intra_segment_location = data.start};
 
@@ -75,13 +79,14 @@ TEST(RailsTest, TraverseMultiple) {
   WorldSpaceCoordinates point_4 = {.x = origin + 10.0 * metre, .y = origin + 0.0 * metre};
   constexpr Rails::SegmentId id_1 = {.id = 1};
   constexpr Rails::SegmentId id_2 = {.id = 2};
-  rails.AddSegment(id_1, {point_1, point_2, point_3, point_4}, id_2, id_2);
-  rails.AddSegment(id_2, {point_4, point_1}, id_1, id_1);
+  rails.AddSegment(id_1, {point_1, point_2, point_3, point_4}, {{id_2}});
+  rails.AddSegment(id_2, {point_4, point_1}, {{id_1}});
 
   // create a location at the middle of segment 1
   Rails::Location original_location{.segment = {.id = 1}, .intra_segment_location = 5.0 * metre};
 
   struct Data {
+    std::source_location src_loc = std::source_location::current();
     Units::Distance distance{};
     Units::Distance resulting_location{};
     Rails::SegmentId resulting_id;
@@ -94,6 +99,8 @@ TEST(RailsTest, TraverseMultiple) {
   };
 
   for (const auto& data : test_data) {
+    ScopedTrace trace(data.src_loc.file_name(), static_cast<int>(data.src_loc.line()), "Expectation declared here");
+
     const auto location = rails.Traverse(original_location, data.distance);
     EXPECT_EQ(location.segment, data.resulting_id);
     // We are compounding a lot of errors here, so our expectations are quite lenient
@@ -112,6 +119,7 @@ TEST(RailsTest, WorldSpace) {
   struct Data {
     Units::Distance intra_segment_location{};
     WorldSpaceCoordinates world_point;
+    std::source_location src_loc = std::source_location::current();
   };
 
   constexpr std::array test_data_line = {
@@ -134,6 +142,8 @@ TEST(RailsTest, WorldSpace) {
   };
 
   for (const auto& data : test_data_circle) {
+    ScopedTrace trace(data.src_loc.file_name(), static_cast<int>(data.src_loc.line()), "Expectation declared here");
+
     Rails::Location location{.segment = {.id = 1}, .intra_segment_location = data.intra_segment_location};
     const auto point = rails.WorldSpace(location);
     ExpectNear(point, data.world_point);

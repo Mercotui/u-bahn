@@ -4,6 +4,7 @@
 #include <raylib.h>
 
 #include <format>
+#include <vector>
 
 #include "game/control/control_scheme_mapper.h"
 #include "game/input/input_manager_interface.h"
@@ -14,7 +15,58 @@
 
 namespace {
 using Control::TrainControls;
-constexpr auto kRailScale{5 * mp_units::si::metre};
+constexpr auto kRailScale{7 * mp_units::si::metre};
+
+enum class UnitCircleQuadrant {
+  kTopRight,
+  kTopLeft,
+  kBottomLeft,
+  kBottomRight,
+};
+std::vector<World::WorldSpaceCoordinates> CircleQuadrantAtOffset(const UnitCircleQuadrant quadrant,
+                                                                 const World::WorldSpaceCoordinates origin) {
+  // construct a clockwise unit-circle
+  World::WorldSpaceCoordinates rail_point_1{.x = origin.x + 1.0 * kRailScale, .y = origin.y + 0.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_1_1{.x = origin.x + 1.0 * kRailScale,
+                                                      .y = origin.y + -0.552284749831 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_1_2{.x = origin.x + 0.552284749831 * kRailScale,
+                                                      .y = origin.y + -1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_point_2{.x = origin.x + 0.0 * kRailScale, .y = origin.y + -1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_2_1{.x = origin.x + -0.552284749831 * kRailScale,
+                                                      .y = origin.y + -1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_2_2{.x = origin.x + -1.0f * kRailScale,
+                                                      .y = origin.y + -0.552284749831 * kRailScale};
+  World::WorldSpaceCoordinates rail_point_3{.x = origin.x + -1.0 * kRailScale, .y = origin.y + 0.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_3_1{.x = origin.x + -1.0f * kRailScale,
+                                                      .y = origin.y + 0.552284749831 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_3_2{.x = origin.x + -0.552284749831 * kRailScale,
+                                                      .y = origin.y + 1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_point_4{.x = origin.x + 0.0 * kRailScale, .y = origin.y + 1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_4_1{.x = origin.x + 0.552284749831 * kRailScale,
+                                                      .y = origin.y + 1.0 * kRailScale};
+  World::WorldSpaceCoordinates rail_control_point_4_2{.x = origin.x + 1.0 * kRailScale,
+                                                      .y = origin.y + 0.552284749831 * kRailScale};
+
+  std::vector<World::WorldSpaceCoordinates> curve_points;
+
+  switch (quadrant) {
+    case UnitCircleQuadrant::kTopRight: {
+      return {rail_point_1, rail_control_point_1_1, rail_control_point_1_2, rail_point_2};
+    }
+    case UnitCircleQuadrant::kTopLeft: {
+      return {rail_point_2, rail_control_point_2_1, rail_control_point_2_2, rail_point_3};
+    }
+    case UnitCircleQuadrant::kBottomLeft: {
+      return {rail_point_3, rail_control_point_3_1, rail_control_point_3_2, rail_point_4};
+    }
+    case UnitCircleQuadrant::kBottomRight: {
+      return {rail_point_4, rail_control_point_4_1, rail_control_point_4_2, rail_point_1};
+    }
+    default: {
+      return {};
+    }
+  }
+}
 }  // namespace
 
 Game::Game()
@@ -22,7 +74,7 @@ Game::Game()
       controls_mapper_(std::make_unique<ControlSchemeMapper>()),
       rails_(std::make_unique<Rails>()) {
   camera_ = {0};
-  camera_.position = (::Vector3){10.0f, 10.0f, 10.0f};
+  camera_.position = (::Vector3){-10.0f, -10.0f, 10.0f};
   camera_.target = (Vector3){0.0f, 0.0f, 0.0f};
   camera_.up = (Vector3){0.0f, 0.0f, 1.0f};
   camera_.fovy = 45.0f;
@@ -30,41 +82,39 @@ Game::Game()
 
   SetTargetFPS(60);
 
-  // construct a clockwise unit-circle
-  World::WorldSpaceCoordinates rail_point_1{.x = World::origin + 1.0 * kRailScale,
-                                            .y = World::origin + 0.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_1_1{.x = World::origin + 1.0 * kRailScale,
-                                                      .y = World::origin + -0.552284749831 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_1_2{.x = World::origin + 0.552284749831 * kRailScale,
-                                                      .y = World::origin + -1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_point_2{.x = World::origin + 0.0 * kRailScale,
-                                            .y = World::origin + -1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_2_1{.x = World::origin + -0.552284749831 * kRailScale,
-                                                      .y = World::origin + -1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_2_2{.x = World::origin + -1.0f * kRailScale,
-                                                      .y = World::origin + -0.552284749831 * kRailScale};
-  World::WorldSpaceCoordinates rail_point_3{.x = World::origin + -1.0 * kRailScale,
-                                            .y = World::origin + 0.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_3_1{.x = World::origin + -1.0f * kRailScale,
-                                                      .y = World::origin + 0.552284749831 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_3_2{.x = World::origin + -0.552284749831 * kRailScale,
-                                                      .y = World::origin + 1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_point_4{.x = World::origin + 0.0 * kRailScale,
-                                            .y = World::origin + 1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_4_1{.x = World::origin + 0.552284749831 * kRailScale,
-                                                      .y = World::origin + 1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_4_2{.x = World::origin + 1.0 * kRailScale,
-                                                      .y = World::origin + 0.552284749831 * kRailScale};
+  Rails::SegmentId id_1 = {1};
+  Rails::SegmentId id_2 = {2};
+  Rails::SegmentId id_3 = {3};
+  Rails::SegmentId id_4 = {4};
+  Rails::SegmentId id_5 = {5};
+  Rails::SegmentId id_6 = {6};
+  Rails::SegmentId id_7 = {7};
 
-  rails_->AddSegment({.id = 1}, {rail_point_1, rail_control_point_1_1, rail_control_point_1_2, rail_point_2}, {.id = 4},
-                     {.id = 2});
-  rails_->AddSegment({.id = 2}, {rail_point_2, rail_control_point_2_1, rail_control_point_2_2, rail_point_3}, {.id = 1},
-                     {.id = 3});
-  rails_->AddSegment({.id = 3}, {rail_point_3, rail_control_point_3_1, rail_control_point_3_2, rail_point_4}, {.id = 2},
-                     {.id = 4});
-  rails_->AddSegment({.id = 4}, {rail_point_4, rail_control_point_4_1, rail_control_point_4_2, rail_point_1}, {.id = 3},
-                     {.id = 1});
-  train_ = std::make_unique<Train>(*rails_, Rails::Location{.segment = {.id = 1}}, 4);
+  // Circle
+  rails_->AddSegment(id_1, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopRight, {}), {{id_4}, {id_5}},
+                     {{id_2, Rails::SegmentEndpoint::kBegin}});
+  rails_->AddSegment(id_2, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopLeft, {}), {{id_1}},
+                     {{id_3, Rails::SegmentEndpoint::kBegin}});
+  rails_->AddSegment(id_3, CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomLeft, {}), {{id_2}},
+                     {{id_4, Rails::SegmentEndpoint::kBegin}});
+  //  rails_->AddSegment(id_4, CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomRight, {}), {{id_3}},
+  //                     {{id_1, Rails::SegmentEndpoint::kBegin}});
+
+  // Turning Loop
+  rails_->AddSegment(id_5,
+                     CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomLeft,
+                                            {World::origin + 2 * kRailScale, World::origin + 0 * kRailScale}),
+                     {{id_1, Rails::SegmentEndpoint::kBegin}}, {{id_7, Rails::SegmentEndpoint::kBegin}});
+  rails_->AddSegment(id_6,
+                     {{World::origin + 0 * kRailScale, World::origin + 1 * kRailScale},
+                      {World::origin + 2 * kRailScale, World::origin + 1 * kRailScale}},
+                     {{id_3}}, {{id_7, Rails::SegmentEndpoint::kBegin}});
+  rails_->AddSegment(id_7,
+                     CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomRight,
+                                            {World::origin + 2 * kRailScale, World::origin + 0 * kRailScale}),
+                     {{id_6}, {id_5}});
+
+  train_ = std::make_unique<Train>(*rails_, Rails::Location{.segment = id_7}, 2);
 }
 
 Game::~Game() = default;

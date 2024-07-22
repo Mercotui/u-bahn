@@ -1,11 +1,11 @@
 #pragma once
 
 #include <array>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-#include "game/world/rails.h"
 #include "game/world/world.h"
 
 //! Forward declared, defined in game/world/rail_segment.h
@@ -13,11 +13,6 @@ class RailSegment;
 
 class Rails {
  public:
-  //! Constructor
-  Rails();
-  //! Destructor
-  ~Rails();
-
   /**
    * strong typed ID that specifies a RailSegment
    */
@@ -26,6 +21,7 @@ class Rails {
 
     explicit operator bool() const { return id != 0; }
     [[nodiscard]] bool operator==(const SegmentId& other) const { return id == other.id; }
+    [[nodiscard]] bool operator<(const SegmentId& other) const { return id < other.id; }
     struct Hasher {
       std::size_t operator()(const SegmentId& instance) const { return std::hash<unsigned>()(instance.id); }
     };
@@ -35,6 +31,30 @@ class Rails {
   static constexpr SegmentId NullSegmentId{.id = 0};
 
   using SegmentMap = std::unordered_map<SegmentId, std::unique_ptr<RailSegment>, SegmentId::Hasher>;
+
+  //! One of the two endpoints of any railsegment
+  enum class SegmentEndpoint { kBegin, kEnd };
+
+  //! One specific endpoint of a railsegement
+  struct SegmentEndpointId {
+    SegmentId id{NullSegmentId};
+    SegmentEndpoint end_point{SegmentEndpoint::kEnd};
+
+    explicit operator bool() const { return id.operator bool(); }
+
+    [[nodiscard]] bool operator==(const SegmentEndpointId& other) const {
+      return id == other.id && end_point == other.end_point;
+    }
+
+    [[nodiscard]] bool operator<(const SegmentEndpointId& other) const {
+      if (id < other.id) {
+        return true;
+      } else if (id == other.id) {
+        return end_point < other.end_point;
+      }
+      return false;
+    }
+  };
 
   /**
    * A location on the rails
@@ -48,14 +68,22 @@ class Rails {
     }
   };
 
+  //! Constructor
+  Rails();
+  //! Destructor
+  ~Rails();
+
   /**
-   * Create a rail segment builder for a RailSegment with the given curve.
+   * Add rail segment with the given curve.
+   * Incoming and outgoing switches will default to the first incoming and outgoing segment respectively.
+   * @param id the unique ID of this rail segment
    * @param curve_points the curve of the RailSegment we want to build
+   * @param incoming_segments the segments that lead into this segment, between 0 and 2 elements allowed
+   * @param outgoing_segments the segments that lead out from this segment, between 0 and 2 elements allowed
    */
   void AddSegment(SegmentId id, const std::vector<World::WorldSpaceCoordinates>& curve_points,
-                  Rails::SegmentId incoming = NullSegmentId, Rails::SegmentId outgoing = NullSegmentId,
-                  Rails::SegmentId incoming_switch = NullSegmentId, bool incoming_switch_selected = false,
-                  Rails::SegmentId outgoing_switch = NullSegmentId, bool outgoing_switch_selected = false);
+                  std::vector<SegmentEndpointId> begin_connections = {},
+                  std::vector<SegmentEndpointId> end_connections = {});
 
   /**
    * Get the world-space coordinates for this rail location.
@@ -78,4 +106,5 @@ class Rails {
 
  private:
   SegmentMap segments_;
+  std::multimap<SegmentEndpointId, SegmentEndpointId> failed_connections_;
 };

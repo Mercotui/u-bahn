@@ -21,8 +21,8 @@ static void BM_SomeFunction(benchmark::State& state) {  // NOLINT(runtime/refere
                                           .y = World::origin + 0.0 * kRailScale};
   constexpr Rails::SegmentId id_1 = {.id = 1};
   constexpr Rails::SegmentId id_2 = {.id = 2};
-  rails.AddSegment(id_1, {point_1, point_2, point_3, point_4}, id_2, id_2);
-  rails.AddSegment(id_2, {point_4, point_1}, id_1, id_1);
+  rails.AddSegment(id_1, {point_1, point_2, point_3, point_4}, {{id_2}});
+  rails.AddSegment(id_2, {point_4, point_1}, {{id_1}});
 
   Rails::Location location{.segment = id_1, .intra_segment_location = {}};
 

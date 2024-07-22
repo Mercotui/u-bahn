@@ -95,10 +95,17 @@ RailSegment::TraverseResult RailSegment::Traverse(const Rails::Location location
   // We reached a dead end, traversal is complete even though we did not reach the desired distance.
   return TraverseCompletionResult(location.segment, dead_end);
 }
-Rails::SegmentId RailSegment::DetermineNext(const RailSegment::TraverseDirection direction) const {
+Rails::SegmentEndpointId RailSegment::DetermineNext(const RailSegment::TraverseDirection direction) const {
   // TODO(Menno 19.05.2024) implement switching here
   if (direction == TraverseDirection::kBackward) {
+    if (previous_switch) {
+      return previous_diverging;
+    }
     return previous;
+  }
+
+  if (next_switch) {
+    return next_diverging;
   }
   return next;
 }

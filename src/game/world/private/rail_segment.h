@@ -13,7 +13,7 @@ class RailSegment {
 
   using TraverseCompletionResult = Rails::Location;
   struct TraverseIncompleteResult {
-    Rails::SegmentId next_segment;
+    Rails::SegmentEndpointId next_segment;
     TraverseDirection direction_in_next_segment{};
     Units::Distance remainder{};
   };
@@ -28,18 +28,17 @@ class RailSegment {
 
   [[nodiscard]] TraverseResult Traverse(Rails::Location location, Units::Distance distance) const;
 
-  [[nodiscard]] Rails::SegmentId DetermineNext(TraverseDirection direction) const;
+  [[nodiscard]] Rails::SegmentEndpointId DetermineNext(TraverseDirection direction) const;
 
   void DrawDebug();
 
   bool previous_switch{false};
-  Rails::SegmentId previous{};
-  Rails::SegmentId previous_diverging{};
+  Rails::SegmentEndpointId previous{};
+  Rails::SegmentEndpointId previous_diverging{};
 
   bool next_switch{false};
-  Rails::SegmentId next{};
-
-  Rails::SegmentId next_diverging{};
+  Rails::SegmentEndpointId next{};
+  Rails::SegmentEndpointId next_diverging{};
 
  private:
   // TODO(Menno 19.05.2024) Add changeable height  to rail segments

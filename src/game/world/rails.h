@@ -35,6 +35,8 @@ class Rails {
   //! One of the two endpoints of any railsegment
   enum class SegmentEndpoint { kBegin, kEnd };
 
+  enum class SegmentTraverseDirection { kForward, kBackward };
+
   //! One specific endpoint of a railsegement
   struct SegmentEndpointId {
     SegmentId id{NullSegmentId};
@@ -62,6 +64,7 @@ class Rails {
   struct Location {
     SegmentId segment{NullSegmentId};
     Units::Distance intra_segment_location{};
+    SegmentTraverseDirection intra_segment_direction{SegmentTraverseDirection::kForward};
 
     [[nodiscard]] bool operator==(const Location& other) const {
       return segment == other.segment && intra_segment_location == other.intra_segment_location;

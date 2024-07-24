@@ -17,9 +17,10 @@ constexpr unsigned kMaxTraverseIterations{10000};
 Rails::Location LocationFromIncompleteTraverseResult(
     const Rails::SegmentMap& segments, const RailSegment::TraverseIncompleteResult& incomplete_traverse_result) {
   Rails::Location location{.segment = incomplete_traverse_result.next_segment.id,
-                           .intra_segment_location = 0.0 * metre};
+                           .intra_segment_location = 0.0 * metre,
+                           .intra_segment_direction = incomplete_traverse_result.direction_in_next_segment};
 
-  if (incomplete_traverse_result.direction_in_next_segment == RailSegment::TraverseDirection::kForward) {
+  if (incomplete_traverse_result.next_segment.end_point == Rails::SegmentEndpoint::kBegin) {
     return location;
   }
 
@@ -175,10 +176,10 @@ Rails::Location Rails::Traverse(const Rails::Location& initial_location,
   while (remainder != 0.0 * metre) {
     if (kMaxTraverseIterations < iterations++) {
       LOG(ERROR) << "Giving up on traversal after " << kMaxTraverseIterations
-                 << " iterations.\ninitial_location{ segment=" << initial_location.segment.id
+                 << " iterations.\n  initial_location{segment=" << initial_location.segment.id
                  << ", intra_segment_location=" << initial_location.intra_segment_location.numerical_value_in(metre)
-                 << "}\n requested_distance=" << requested_distance.numerical_value_in(metre)
-                 << "\n location{ segment=" << initial_location.segment.id
+                 << "}\n  requested_distance=" << requested_distance.numerical_value_in(metre)
+                 << "\n  location{segment=" << initial_location.segment.id
                  << ", intra_segment_location=" << initial_location.intra_segment_location.numerical_value_in(metre)
                  << "}";
       return initial_location;

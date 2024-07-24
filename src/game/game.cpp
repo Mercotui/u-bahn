@@ -91,8 +91,8 @@ Game::Game()
   Rails::SegmentId id_7 = {7};
 
   // Circle
-  rails_->AddSegment(id_1, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopRight, {}), {{id_4}, {id_5}},
-                     {{id_2, Rails::SegmentEndpoint::kBegin}});
+  rails_->AddSegment(id_1, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopRight, {}),
+                     {{id_4}, {id_5, Rails::SegmentEndpoint::kBegin}}, {{id_2, Rails::SegmentEndpoint::kBegin}});
   rails_->AddSegment(id_2, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopLeft, {}), {{id_1}},
                      {{id_3, Rails::SegmentEndpoint::kBegin}});
   rails_->AddSegment(id_3, CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomLeft, {}), {{id_2}},
@@ -114,7 +114,9 @@ Game::Game()
                                             {World::origin + 2 * kRailScale, World::origin + 0 * kRailScale}),
                      {{id_6}, {id_5}});
 
-  train_ = std::make_unique<Train>(*rails_, Rails::Location{.segment = id_7}, 2);
+  train_ = std::make_unique<Train>(
+      *rails_, Rails::Location{.segment = id_7, .intra_segment_direction = Rails::SegmentTraverseDirection::kBackward},
+      3);
 }
 
 Game::~Game() = default;

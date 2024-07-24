@@ -9,12 +9,10 @@
 
 class RailSegment {
  public:
-  enum class TraverseDirection { kForward, kBackward };
-
   using TraverseCompletionResult = Rails::Location;
   struct TraverseIncompleteResult {
     Rails::SegmentEndpointId next_segment;
-    TraverseDirection direction_in_next_segment{};
+    Rails::SegmentTraverseDirection direction_in_next_segment{};
     Units::Distance remainder{};
   };
   using TraverseResult = std::variant<TraverseCompletionResult, TraverseIncompleteResult>;
@@ -28,7 +26,7 @@ class RailSegment {
 
   [[nodiscard]] TraverseResult Traverse(Rails::Location location, Units::Distance distance) const;
 
-  [[nodiscard]] Rails::SegmentEndpointId DetermineNext(TraverseDirection direction) const;
+  [[nodiscard]] Rails::SegmentEndpointId DetermineNext(Rails::SegmentEndpoint connection_point) const;
 
   void DrawDebug();
 

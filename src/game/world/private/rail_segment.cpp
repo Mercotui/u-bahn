@@ -24,6 +24,21 @@ Vector3 ToRaylibVector3(const bezier::Point& point) {
   return {.x = static_cast<float>(point.x), .y = static_cast<float>(point.y), .z = 0.0f};
 }
 
+Rails::SegmentTraverseDirection DetermineNextTraverseDirection(
+    Rails::SegmentTraverseDirection current_direction, Rails::SegmentEndpoint connection_point_of_current_segment,
+    Rails::SegmentEndpoint connection_point_of_next_segment) {
+  using Rails::SegmentTraverseDirection::kBackward;
+  using Rails::SegmentTraverseDirection::kForward;
+
+  if (connection_point_of_current_segment != connection_point_of_next_segment) {
+    // This is a beginning to end connection, maintain current traversal direction
+    return current_direction;
+  }
+
+  // This is a beginning to beginning or end to end connection, invert traversal direction
+  return current_direction == kForward ? kBackward : kForward;
+}
+
 constexpr unsigned kDebugDrawSampleCount{5};
 constexpr float kDebugDrawSphereSize{0.2f};
 constexpr Color kDebugDrawSampleColor{BLUE};
@@ -72,32 +87,47 @@ World::WorldSpaceCoordinates RailSegment::WorldSpace(const Units::Distance locat
 
 RailSegment::TraverseResult RailSegment::Traverse(const Rails::Location location,
                                                   const Units::Distance distance) const {
-  const Units::Distance new_intra_segment_location = location.intra_segment_location + distance;
-  if (!(0.0 * metre > new_intra_segment_location || new_intra_segment_location > curve_length_)) {
-    return TraverseCompletionResult(location.segment, new_intra_segment_location);
+  // The train might be oriented backwards on the track
+  const double direction_correction =
+      location.intra_segment_direction == Rails::SegmentTraverseDirection::kForward ? 1.0 : -1.0;
+  const Units::Distance intra_segment_distance = distance * direction_correction;
+
+  // Traverse requested distance with regard to the  direction we are facing
+  const Units::Distance new_intra_segment_location = location.intra_segment_location + intra_segment_distance;
+
+  if (0.0 * metre <= new_intra_segment_location && new_intra_segment_location <= curve_length_) {
+    // We completed the requested distance, nothing left to do
+    return TraverseCompletionResult{.segment = location.segment,
+                                    .intra_segment_location = new_intra_segment_location,
+                                    .intra_segment_direction = location.intra_segment_direction};
   }
 
-  // TODO(Menno 19.05.2024) For now I'm assuming we travel backwards in the previous segment, but this is not
-  //  necessarily true, for example turning-loops might start and end at the same point with inverted direction.
-  auto travel_direction = TraverseDirection::kBackward;
+  // The segment ended before we could traverse the requested distance, try to continue in next segment.
+  auto connection_point = Rails::SegmentEndpoint::kBegin;
   Units::Distance remainder = new_intra_segment_location;
   Units::Distance dead_end = 0.0 * metre;
   if (new_intra_segment_location > curve_length_) {
-    // TODO(Menno 19.05.2024) For now I'm assuming we travel forward in the next segment, same as above
-    travel_direction = TraverseDirection::kForward;
+    connection_point = Rails::SegmentEndpoint::kEnd;
     remainder = new_intra_segment_location - curve_length_;
     dead_end = curve_length_;
   }
-  if (const auto next_segment = DetermineNext(travel_direction)) {
+  if (const auto next_segment = DetermineNext(connection_point)) {
     return TraverseIncompleteResult{
-        .next_segment = next_segment, .direction_in_next_segment = travel_direction, .remainder = remainder};
+        .next_segment = next_segment,
+        .direction_in_next_segment =
+            DetermineNextTraverseDirection(location.intra_segment_direction, connection_point, next_segment.end_point),
+        .remainder = remainder * direction_correction,
+    };
   }
+
   // We reached a dead end, traversal is complete even though we did not reach the desired distance.
-  return TraverseCompletionResult(location.segment, dead_end);
+  return TraverseCompletionResult{.segment = location.segment,
+                                  .intra_segment_location = dead_end,
+                                  .intra_segment_direction = location.intra_segment_direction};
 }
-Rails::SegmentEndpointId RailSegment::DetermineNext(const RailSegment::TraverseDirection direction) const {
-  // TODO(Menno 19.05.2024) implement switching here
-  if (direction == TraverseDirection::kBackward) {
+
+Rails::SegmentEndpointId RailSegment::DetermineNext(const Rails::SegmentEndpoint connection_point) const {
+  if (connection_point == Rails::SegmentEndpoint::kBegin) {
     if (previous_switch) {
       return previous_diverging;
     }

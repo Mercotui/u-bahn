@@ -40,9 +40,12 @@ Rails::SegmentTraverseDirection DetermineNextTraverseDirection(
 }
 
 constexpr unsigned kDebugDrawSampleCount{5};
-constexpr float kDebugDrawSphereSize{0.2f};
+constexpr float kDebugDrawControlSphereSize{0.2f};
+constexpr float kDebugDrawSampleSphereSize{0.15f};
 constexpr Color kDebugDrawSampleColor{BLUE};
 constexpr Color kDebugDrawControlColor{PURPLE};
+constexpr Color kDebugDrawBeginColor{GREEN};
+constexpr Color kDebugDrawEndColor{DARKBLUE};
 }  // namespace
 
 RailSegment::RailSegment(const std::vector<World::WorldSpaceCoordinates>& curve_points) {
@@ -145,17 +148,23 @@ Rails::SegmentEndpointId RailSegment::DetermineNext(const Rails::SegmentEndpoint
 void RailSegment::DrawDebug() {
   std::visit(
       [](auto&& arg) {
-        // Draw curve's control points
-        for (int i = 0; i < arg.size(); i++) {
-          auto current_point = ToRaylibVector3(arg[i]);
-          DrawSphere(current_point, kDebugDrawSphereSize, kDebugDrawControlColor);
-        }
-
+        // Draw a few points on curve
         for (int i = 1; i < kDebugDrawSampleCount; i++) {
           float t = static_cast<float>(i) / kDebugDrawSampleCount;
           auto point = ToRaylibVector3(arg.valueAt(t));
-          DrawSphere(point, kDebugDrawSphereSize, kDebugDrawSampleColor);
+          DrawSphere(point, kDebugDrawSampleSphereSize, kDebugDrawSampleColor);
         }
+
+        // Draw curve's control points except start and end
+        for (int i = arg.size() - 2; i > 0; i--) {
+          auto current_point = ToRaylibVector3(arg[i]);
+          DrawSphere(current_point, kDebugDrawControlSphereSize, kDebugDrawControlColor);
+        }
+
+        // Draw beginning and end points, we draw NEAR the end-points,
+        // otherwise they would overlap with the connecting segment.
+        DrawSphere(ToRaylibVector3(arg.valueAt(0.01)), kDebugDrawControlSphereSize, kDebugDrawBeginColor);
+        DrawSphere(ToRaylibVector3(arg.valueAt(0.99)), kDebugDrawControlSphereSize, kDebugDrawEndColor);
       },
       curve_);
 }

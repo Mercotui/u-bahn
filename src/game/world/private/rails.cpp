@@ -167,8 +167,10 @@ World::WorldSpaceCoordinates Rails::WorldSpace(const Rails::Location& location) 
   return segment->second->WorldSpace(location.intra_segment_location);
 }
 
-Rails::Location Rails::Traverse(const Rails::Location& initial_location,
-                                const Units::Distance requested_distance) const {
+std::pair<Rails::Location, bool> Rails::Traverse(const Rails::Location& initial_location,
+                                                 const Units::Distance requested_distance) const {
+  RailSegment::TraverseCompletionResult result{.location = initial_location,
+                                               .conclusion = RailSegment::TraversalConclusion::kCompleted};
   Units::Distance remainder = requested_distance;
   Location location = initial_location;
 
@@ -182,12 +184,12 @@ Rails::Location Rails::Traverse(const Rails::Location& initial_location,
                  << "\n  location{segment=" << initial_location.segment.id
                  << ", intra_segment_location=" << initial_location.intra_segment_location.numerical_value_in(metre)
                  << "}";
-      return initial_location;
+      return std::make_pair(initial_location, false);
     }
     const auto segment_it = segments_.find(location.segment);
     if (segment_it == segments_.end()) {
       LOG(ERROR) << "Trying to traverse across unknown rail segment " << location.segment.id;
-      return initial_location;
+      return std::make_pair(initial_location, false);
     }
     const auto& segment = segment_it->second;
 
@@ -197,14 +199,14 @@ Rails::Location Rails::Traverse(const Rails::Location& initial_location,
       remainder = incomplete_traverse_result.remainder;
       location = LocationFromIncompleteTraverseResult(segments_, incomplete_traverse_result);
     } else if (std::holds_alternative<RailSegment::TraverseCompletionResult>(traverse_result)) {
-      location = std::get<RailSegment::TraverseCompletionResult>(traverse_result);
+      result = std::get<RailSegment::TraverseCompletionResult>(traverse_result);
       remainder = 0.0 * metre;
     } else {
       LOG(ERROR) << "Unknown result from traversing rail segment";
-      return initial_location;
+      return std::make_pair(initial_location, false);
     }
   }
-  return location;
+  return std::make_pair(result.location, result.conclusion == RailSegment::TraversalConclusion::kCompleted);
 }
 
 void Rails::DrawDebug() {

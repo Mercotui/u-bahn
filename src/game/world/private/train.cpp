@@ -1,5 +1,6 @@
 #include "game/world/train.h"
 
+#include <absl/log/log.h>
 #include <raylib.h>
 #include <raymath.h>
 
@@ -31,6 +32,24 @@ float fToNumericalFromOrigin(World::Coordinate coordinate) {
   return static_cast<float>(coordinate.quantity_from(World::origin).numerical_value_in(metre));
 }
 
+/**
+ * Tries to apply the requested distance to each train car, if a car does not move then we stop the following cars.
+ * We use a separate function for this to simply the view usage,
+ * as `cars_` and `cars_ | reverse` are incompatible types.
+ */
+bool ApplyDistance(const Rails& rails, const Units::Distance distance, auto&& cars) {
+  for (auto& car : cars) {
+    auto [new_first, success_first] = rails.Traverse(car.first, distance);
+    auto [new_second, success_second] = rails.Traverse(new_first, kCarBogieDistance);
+    if (!(success_first && success_second)) {
+      return false;
+    }
+    car.first = new_first;
+    car.second = new_second;
+  }
+  return true;
+}
+
 Vector3 ToRaylibVector3(const World::WorldSpaceCoordinates& world_space_coordinates) {
   float x = fToNumericalFromOrigin(world_space_coordinates.x);
   float y = fToNumericalFromOrigin(world_space_coordinates.y);
@@ -43,8 +62,12 @@ Train::Train(const Rails& rails, const Rails::Location location, const int car_c
     : rails_(rails), cars_(car_count) {
   int current_car{};
   std::generate(std::begin(cars_), std::end(cars_), [this, &current_car, &location]() {
-    auto car_front = rails_.Traverse(location, kCarDistance * current_car++);
-    auto car_back = rails_.Traverse(car_front, kCarBogieDistance);
+    auto [car_front, result_front] = rails_.Traverse(location, kCarDistance * current_car++);
+    auto [car_back, result_back] = rails_.Traverse(car_front, kCarBogieDistance);
+    if (!(result_front && result_back)) {
+      // Note the increment of current_car happening a few lines earlier, making this log effectively 1 indexed
+      LOG(WARNING) << "Incorrect initial placement for car #" << current_car;
+    }
     return std::make_pair(car_front, car_back);
   });
 
@@ -66,13 +89,15 @@ void Train::Control(const TrainControls& controls, const Units::TimeDelta time) 
 
   auto distance = speed_ * time * direction_;
 
-  for (auto& car : cars_) {
-    auto new_location = rails_.Traverse(car.first, distance);
-    if (new_location == car.first) {
-      speed_ = 0.0 * metre / second;
-    }
-    car.first = new_location;
-    car.second = rails_.Traverse(car.first, kCarBogieDistance);
+  bool distance_applied{false};
+  // Iterate in direction of travel, so that collisions are detected properly
+  if (std::signbit(direction_)) {
+    distance_applied = ApplyDistance(rails_, distance, cars_ | std::views::reverse);
+  } else {
+    distance_applied = ApplyDistance(rails_, distance, cars_);
+  }
+  if (!distance_applied) {
+    speed_ = 0.0 * metre / second;
   }
 }
 

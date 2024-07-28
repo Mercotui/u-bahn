@@ -97,9 +97,10 @@ RailSegment::TraverseResult RailSegment::Traverse(const Rails::Location location
 
   if (0.0 * metre <= new_intra_segment_location && new_intra_segment_location <= curve_length_) {
     // We completed the requested distance, nothing left to do
-    return TraverseCompletionResult{.segment = location.segment,
-                                    .intra_segment_location = new_intra_segment_location,
-                                    .intra_segment_direction = location.intra_segment_direction};
+    return TraverseCompletionResult{.location{.segment = location.segment,
+                                              .intra_segment_location = new_intra_segment_location,
+                                              .intra_segment_direction = location.intra_segment_direction},
+                                    .conclusion = TraversalConclusion::kCompleted};
   }
 
   // The segment ended before we could traverse the requested distance, try to continue in next segment.
@@ -121,9 +122,10 @@ RailSegment::TraverseResult RailSegment::Traverse(const Rails::Location location
   }
 
   // We reached a dead end, traversal is complete even though we did not reach the desired distance.
-  return TraverseCompletionResult{.segment = location.segment,
-                                  .intra_segment_location = dead_end,
-                                  .intra_segment_direction = location.intra_segment_direction};
+  return TraverseCompletionResult{.location{.segment = location.segment,
+                                            .intra_segment_location = dead_end,
+                                            .intra_segment_direction = location.intra_segment_direction},
+                                  .conclusion = TraversalConclusion::kDeadEnd};
 }
 
 Rails::SegmentEndpointId RailSegment::DetermineNext(const Rails::SegmentEndpoint connection_point) const {

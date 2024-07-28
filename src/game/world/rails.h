@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "game/world/world.h"
@@ -98,9 +99,9 @@ class Rails {
    * Traverse distance along the rails from starting point position.
    * @param initial_location
    * @param requested_distance
-   * @return
+   * @return the new location after traversal, and a bool indicating whether or not the full distance was traversed
    */
-  Location Traverse(const Location& initial_location, Units::Distance requested_distance) const;
+  std::pair<Location, bool> Traverse(const Location& initial_location, Units::Distance requested_distance) const;
 
   /**
    * Draw the rail segments in debug mode.

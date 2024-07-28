@@ -9,7 +9,12 @@
 
 class RailSegment {
  public:
-  using TraverseCompletionResult = Rails::Location;
+  enum class TraversalConclusion { kCompleted, kDeadEnd };
+
+  struct TraverseCompletionResult {
+    Rails::Location location;
+    TraversalConclusion conclusion;
+  };
   struct TraverseIncompleteResult {
     Rails::SegmentEndpointId next_segment;
     Rails::SegmentTraverseDirection direction_in_next_segment{};

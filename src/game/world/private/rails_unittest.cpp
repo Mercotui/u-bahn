@@ -43,18 +43,20 @@ TEST(RailsTest, TraverseSingle) {
     std::source_location src_loc = std::source_location::current();
     Units::Distance start{};
     Units::Distance distance{};
-    Units::Distance result{};
+    Units::Distance result_distance{};
+    bool result_status{};
   };
 
   constexpr std::array test_data = {
-      Data{.start = -10.0 * metre, .distance = -1.0 * metre, .result = 0.0 * metre},
-      Data{.start = 0.0 * metre, .distance = -2.0 * metre, .result = 0.0 * metre},
-      Data{.start = 0.0 * metre, .distance = 2.0 * metre, .result = 2.0 * metre},
-      Data{.start = 0.0 * metre, .distance = 20.0 * metre, .result = 20.0 * metre},
-      Data{.start = 19.0 * metre, .distance = 1.0 * metre, .result = 20.0 * metre},
-      Data{.start = 20.0 * metre, .distance = 1.0 * metre, .result = 20.0 * metre},
-      Data{.start = 20.0 * metre, .distance = 1.0 * metre, .result = 20.0 * metre},
-      Data{.start = 20.0 * metre, .distance = -20.0 * metre, .result = 0.0 * metre},
+      Data{.start = -10.0 * metre, .distance = -1.0 * metre, .result_distance = 0.0 * metre, .result_status = false},
+      Data{.start = 0.0 * metre, .distance = -2.0 * metre, .result_distance = 0.0 * metre, .result_status = false},
+      Data{.start = 0.0 * metre, .distance = 2.0 * metre, .result_distance = 2.0 * metre, .result_status = true},
+      Data{.start = 0.0 * metre, .distance = 20.0 * metre, .result_distance = 20.0 * metre, .result_status = true},
+      Data{.start = 10.0 * metre, .distance = 0.0 * metre, .result_distance = 10.0 * metre, .result_status = true},
+      Data{.start = 19.0 * metre, .distance = 1.0 * metre, .result_distance = 20.0 * metre, .result_status = true},
+      Data{.start = 20.0 * metre, .distance = 1.0 * metre, .result_distance = 20.0 * metre, .result_status = false},
+      Data{.start = 30.0 * metre, .distance = 1.0 * metre, .result_distance = 20.0 * metre, .result_status = false},
+      Data{.start = 20.0 * metre, .distance = -20.0 * metre, .result_distance = 0.0 * metre, .result_status = true},
   };
 
   for (const auto& data : test_data) {
@@ -63,9 +65,10 @@ TEST(RailsTest, TraverseSingle) {
     // create a location at the start of this rail segment
     Rails::Location start_location{.segment = {.id = 1}, .intra_segment_location = data.start};
 
-    const auto result_location = rails.Traverse(start_location, data.distance);
+    const auto [result_location, result_status] = rails.Traverse(start_location, data.distance);
     EXPECT_EQ(result_location.segment, id);
-    ExpectNear(result_location.intra_segment_location, data.result, kDistanceEpsilon);
+    EXPECT_EQ(result_status, data.result_status);
+    ExpectNear(result_location.intra_segment_location, data.result_distance, kDistanceEpsilon);
   }
 }
 
@@ -101,7 +104,8 @@ TEST(RailsTest, TraverseMultiple) {
   for (const auto& data : test_data) {
     ScopedTrace trace(data.src_loc.file_name(), static_cast<int>(data.src_loc.line()), "Expectation declared here");
 
-    const auto location = rails.Traverse(original_location, data.distance);
+    const auto [location, status] = rails.Traverse(original_location, data.distance);
+    EXPECT_TRUE(status);
     EXPECT_EQ(location.segment, data.resulting_id);
     // We are compounding a lot of errors here, so our expectations are quite lenient
     ExpectNear(location.intra_segment_location, data.resulting_location, 0.1 * metre);
@@ -142,7 +146,8 @@ TEST(RailsTest, TraverseMultipleBackwards) {
   for (const auto& data : test_data) {
     ScopedTrace trace(data.src_loc.file_name(), static_cast<int>(data.src_loc.line()), "Expectation declared here");
 
-    const auto location = rails.Traverse(original_location, data.distance);
+    const auto [location, status] = rails.Traverse(original_location, data.distance);
+    EXPECT_TRUE(status);
     EXPECT_EQ(location.segment, data.resulting_id);
     // We are compounding a lot of errors here, so our expectations are quite lenient
     ExpectNear(location.intra_segment_location, data.resulting_location, 0.1 * metre);
@@ -191,7 +196,8 @@ TEST(RailsTest, TraverseTurningLoop) {
   for (const auto& data : test_data) {
     ScopedTrace trace(data.src_loc.file_name(), static_cast<int>(data.src_loc.line()), "Expectation declared here");
 
-    const auto location = rails.Traverse(original_location, data.distance);
+    const auto [location, status] = rails.Traverse(original_location, data.distance);
+    EXPECT_TRUE(status);
     EXPECT_EQ(location.segment, data.resulting_id);
     // We are compounding a lot of errors here, so our expectations are quite lenient
     ExpectNear(location.intra_segment_location, data.resulting_location, 0.1 * metre);

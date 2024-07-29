@@ -137,6 +137,7 @@ bool Game::Loop() {
   train_->Draw();
   if (show_debug_) {
     rails_->DrawDebug();
+    train_->DrawDebug();
   }
   EndMode3D();
 

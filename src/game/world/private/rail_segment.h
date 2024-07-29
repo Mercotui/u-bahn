@@ -33,7 +33,7 @@ class RailSegment {
 
   [[nodiscard]] Rails::SegmentEndpointId DetermineNext(Rails::SegmentEndpoint connection_point) const;
 
-  void DrawDebug();
+  void DrawDebug() const;
 
   bool previous_switch{false};
   Rails::SegmentEndpointId previous{};

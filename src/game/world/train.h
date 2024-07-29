@@ -20,6 +20,7 @@ class Train {
   [[nodiscard]] Units::Speed Speed() const { return speed_; }
 
   void Draw() const;
+  void DrawDebug() const;
 
  private:
   const Rails& rails_;

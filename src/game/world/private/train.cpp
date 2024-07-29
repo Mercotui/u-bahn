@@ -28,6 +28,9 @@ constexpr float kModelScale{0.3f};
 constexpr Vector3 kModelScale3D{kModelScale, kModelScale, kModelScale};
 constexpr Vector3 kModelRotationAxis{0.0, 0.0, 1.0};
 
+constexpr Vector3 kDebugDrawPointSize{0.2f, 0.2f, 2.0f};
+constexpr Color kDebugDrawFrontColor{BLACK};
+
 float fToNumericalFromOrigin(World::Coordinate coordinate) {
   return static_cast<float>(coordinate.quantity_from(World::origin).numerical_value_in(metre));
 }
@@ -112,4 +115,14 @@ void Train::Draw() const {
     float angle = (atan2(point_tmp.y, point_tmp.x) * (180.0f / PI)) - 90.0f;
     DrawModelEx(model_, point_1, kModelRotationAxis, angle, kModelScale3D, YELLOW);
   }
+}
+
+void Train::DrawDebug() const {
+  // Indicate the front of the train
+  const auto front_position = rails_.WorldSpace(cars_.begin()->first);
+  const auto back_position = rails_.WorldSpace(cars_.begin()->second);
+  DrawCubeV(ToRaylibVector3(front_position), kDebugDrawPointSize, kDebugDrawFrontColor);
+  DrawCubeV(ToRaylibVector3(back_position), kDebugDrawPointSize, kDebugDrawFrontColor);
+
+  // Show train debug text
 }

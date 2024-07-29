@@ -3,6 +3,9 @@
 #include <absl/log/log.h>
 #include <raylib.h>
 
+#include <ranges>
+#include <tuple>
+
 namespace {
 using mp_units::si::metre;
 
@@ -40,8 +43,7 @@ Rails::SegmentTraverseDirection DetermineNextTraverseDirection(
 }
 
 constexpr unsigned kDebugDrawSampleCount{5};
-constexpr float kDebugDrawControlSphereSize{0.2f};
-constexpr float kDebugDrawSampleSphereSize{0.15f};
+constexpr Vector3 kDebugDrawControlPointSize{0.2f, 0.2f, 0.2f};
 constexpr Color kDebugDrawSampleColor{BLUE};
 constexpr Color kDebugDrawControlColor{PURPLE};
 constexpr Color kDebugDrawBeginColor{GREEN};
@@ -145,26 +147,31 @@ Rails::SegmentEndpointId RailSegment::DetermineNext(const Rails::SegmentEndpoint
   return next;
 }
 
-void RailSegment::DrawDebug() {
+void RailSegment::DrawDebug() const {
   std::visit(
       [](auto&& arg) {
-        // Draw a few points on curve
-        for (int i = 1; i < kDebugDrawSampleCount; i++) {
+        std::vector<bezier::Point> samples;
+        // Get a few points on curve
+        for (int i = 0; i <= kDebugDrawSampleCount; i++) {
           float t = static_cast<float>(i) / kDebugDrawSampleCount;
-          auto point = ToRaylibVector3(arg.valueAt(t));
-          DrawSphere(point, kDebugDrawSampleSphereSize, kDebugDrawSampleColor);
+          samples.push_back(arg.valueAt(t));
+        }
+        // Draw the lines between each sample
+        for (std::tuple sample_pair : samples | std::views::adjacent<2>) {
+          auto [start, end] = sample_pair;
+          DrawLine3D(ToRaylibVector3(start), ToRaylibVector3(end), kDebugDrawSampleColor);
         }
 
         // Draw curve's control points except start and end
         for (int i = arg.size() - 2; i > 0; i--) {
           auto current_point = ToRaylibVector3(arg[i]);
-          DrawSphere(current_point, kDebugDrawControlSphereSize, kDebugDrawControlColor);
+          DrawCubeV(current_point, kDebugDrawControlPointSize, kDebugDrawControlColor);
         }
 
-        // Draw beginning and end points, we draw NEAR the end-points,
+        // Draw beginning and end points, we sample NEAR the end-points,
         // otherwise they would overlap with the connecting segment.
-        DrawSphere(ToRaylibVector3(arg.valueAt(0.01)), kDebugDrawControlSphereSize, kDebugDrawBeginColor);
-        DrawSphere(ToRaylibVector3(arg.valueAt(0.99)), kDebugDrawControlSphereSize, kDebugDrawEndColor);
+        DrawCubeV(ToRaylibVector3(arg.valueAt(0.01)), kDebugDrawControlPointSize, kDebugDrawBeginColor);
+        DrawCubeV(ToRaylibVector3(arg.valueAt(0.99)), kDebugDrawControlPointSize, kDebugDrawEndColor);
       },
       curve_);
 }

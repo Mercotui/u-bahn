@@ -1,5 +1,9 @@
 #include "game/control/control_scheme_mapper.h"
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+
 #include "game/input/keyboard_mouse.h"
 
 namespace {

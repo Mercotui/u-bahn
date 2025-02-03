@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cmath>
 #include <utility>
+#include <string>
 
 namespace {
 using std::chrono_literals::operator""s;

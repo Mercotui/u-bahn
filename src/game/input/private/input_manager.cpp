@@ -3,6 +3,8 @@
 #include <absl/log/log.h>
 
 #include <iostream>
+#include <memory>
+#include <utility>
 
 #include "game/input/input.h"
 #if defined(HAS_LIB_GAME_INPUT_JOYSTICK)

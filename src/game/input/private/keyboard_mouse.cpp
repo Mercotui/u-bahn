@@ -4,6 +4,7 @@
 
 #include <format>
 #include <type_traits>
+#include <string>
 
 std::string KeyboardMouseInput::KeyName(KeyboardMouseInput::Key key) {
   switch (key) {

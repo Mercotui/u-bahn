@@ -4,6 +4,7 @@
 #include <raylib.h>
 
 #include <ranges>
+#include <vector>
 #include <tuple>
 
 namespace {

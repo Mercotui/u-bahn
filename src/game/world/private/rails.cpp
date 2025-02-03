@@ -3,7 +3,9 @@
 #include <absl/log/log.h>
 
 #include <memory>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include "game/world/private/rail_segment.h"
 #include "game/world/world.h"

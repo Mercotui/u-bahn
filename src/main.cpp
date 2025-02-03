@@ -6,6 +6,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#include <cstdio>
+
 #include "game/game.h"
 
 namespace {
@@ -41,7 +43,7 @@ int main() {
     constexpr auto kMaxLogLength = 2048;
     char expanded_text[kMaxLogLength];
     std::vsnprintf(expanded_text, kMaxLogLength, text, args);
-    auto absl_level = RaylibToAbslLogLevel(static_cast<TraceLogLevel>(level));
+    const auto absl_level = RaylibToAbslLogLevel(static_cast<TraceLogLevel>(level));
     LOG(LEVEL(absl_level)) << "raylib: " << expanded_text;
   });
 

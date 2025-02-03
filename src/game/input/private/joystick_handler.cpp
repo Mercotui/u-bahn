@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <memory>
 
 #include "game/input/input.h"
 #include "libenjoy/libenjoy.h"

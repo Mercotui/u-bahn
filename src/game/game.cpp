@@ -4,6 +4,7 @@
 #include <raylib.h>
 
 #include <format>
+#include <memory>
 #include <vector>
 
 #include "game/control/control_scheme_mapper.h"

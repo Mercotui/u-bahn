@@ -4,13 +4,22 @@ find_package(absl REQUIRED)
 include(cmake/resources.cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(u-bahn
+if (CMAKE_SYSTEM_NAME STREQUAL Android)
+    add_library(u-bahn SHARED)
+else ()
+    add_executable(u-bahn)
+endif ()
+
+target_sources(u-bahn PRIVATE
         main.cpp
         game/game.cpp
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL Android)
-    message(WARNING "Android not yet implemented")
+    target_sources(u-bahn PRIVATE ${ANDROID_NDK_ROOT}/sources/android/native_app_glue/android_native_app_glue.c)
+    target_link_options(u-bahn PUBLIC -u ANativeActivity_onCreate)
+
+    target_link_libraries(u-bahn PRIVATE log android EGL GLESv2)
 elseif (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     target_link_options(u-bahn PRIVATE
             -sUSE_GLFW=3

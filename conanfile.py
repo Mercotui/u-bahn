@@ -6,27 +6,11 @@ class UBahnRecipe(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps", "CMakeToolchain"
 
-    def configure(self):
-        self.options["glfw"].with_x11 = False
-        self.options["glfw"].with_wayland = True
-        self.options["xkbcommon"].with_x11 = False
-        self.options["xkbcommon"].with_wayland = True
-
     def requirements(self):
-        self.requires("gtest/1.14.0")
-        self.requires("benchmark/1.8.4")
-        self.requires("abseil/20240116.2")
-
-        # TODO(Menno 23.04.2024) This reference is my custom package, I intend to upstream it:
-        #   https://github.com/Mercotui/conan-center-index/commit/e367d9c73bef85e63a62ba572e0e4d1fec9cb948
-        #   To create raylib package without x11:
-        #    -o glfw/*:with_x11=False -o glfw/*:with_wayland=True
-        #    -o xkbcommon/*:with_x11=False -o xkbcommon/*:with_wayland=True
-        #   To export package with out building it:
-        #    cd conan-center-index/recipes/raylib/all
-        #    conan export . --version "5.0"
-        self.requires("raylib/5.0#3ba2ff34f19ef878e919de87156da5a1")
-
+        self.requires("gtest/1.15.0")
+        self.requires("benchmark/1.9.1")
+        self.requires("abseil/20240722.0")
+        self.requires("raylib/5.5")
         self.requires("glm/cci.20230113")
         self.requires("bezier/0.2.1")
         self.requires("mp-units/2.1.1")

@@ -17,18 +17,27 @@ using KeyboardMouseInput::MouseButton;
 
 bool DetectDownStroke(const Input::Button& button) { return button.changed && button.down; }
 
-const auto& GetButton(const std::shared_ptr<Input>& input, KeyboardMouseInput::Key key) {
+const Input::Button& GetButton(const std::shared_ptr<Input>& input, Key key) {
   return input->buttons[static_cast<unsigned>(key)];
 }
 
-const auto& GetButton(const std::shared_ptr<Input>& input, KeyboardMouseInput::MouseButton button) {
+const Input::Button& GetButton(const std::shared_ptr<Input>& input, MouseButton button) {
   return input->buttons[static_cast<unsigned>(button)];
 }
 
-float GetAxisValue(const std::shared_ptr<Input>& input, KeyboardMouseInput::MouseAxis axis) {
+float GetAxisValue(const std::shared_ptr<Input>& input, MouseAxis axis) {
   return input->axes[static_cast<unsigned>(axis)].value;
 }
 
+std::shared_ptr<Input> GetActiveInput(const std::vector<std::shared_ptr<Input>>& inputs) {
+  for (const auto& input : inputs) {
+    if (input->active) {
+      return input;
+    }
+  }
+
+  return nullptr;
+}
 }  // namespace
 
 Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
@@ -78,17 +87,4 @@ Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
       return MenuControls();
     }
   }
-}
-
-std::shared_ptr<Input> ControlSchemeMapper::GetActiveInput(const std::vector<std::shared_ptr<Input>>& inputs) {
-  for (const auto& input : inputs) {
-    // if (input->type == Input::Type::kJoystick && input->id == 1) {
-    if (input->type == Input::Type::kKeyboard) {
-      // if (input->type == Input::Type::kMouse) {
-      // if (input->type == Input::Type::kTouch) {
-      return input;
-    }
-  }
-
-  return nullptr;
 }

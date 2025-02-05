@@ -13,20 +13,26 @@ Keyboard::Keyboard() : input_(std::make_shared<Input>()) {
   input_->buttons.resize(static_cast<unsigned>(KeyboardMouseInput::Key::kEnumKeySize), {});
 
   unsigned count{0};
-  for_each(std::begin(input_->buttons), std::end(input_->buttons), [&count](auto& button) {
+  std::ranges::for_each(input_->buttons, [&count](auto& button) {
     button.name = KeyboardMouseInput::KeyName(static_cast<KeyboardMouseInput::Key>(count++));
   });
 }
 
 InputList Keyboard::Poll() {
-  unsigned count{0};
-  for_each(std::begin(input_->buttons), std::end(input_->buttons), [&count](Input::Button& button) {
-    auto key_code = static_cast<KeyboardMouseInput::Key>(count++);
-    KeyboardKey raylib_key_code = RaylibInputHelpers::RaylibKeyboardKey(key_code);
+  input_->active = false;
 
-    bool is_down = IsKeyDown(raylib_key_code);
+  unsigned count{0};
+  std::ranges::for_each(input_->buttons, [&count, this](Input::Button& button) {
+    const auto key_code = static_cast<KeyboardMouseInput::Key>(count++);
+    const KeyboardKey raylib_key_code = RaylibInputHelpers::RaylibKeyboardKey(key_code);
+
+    const bool is_down = IsKeyDown(raylib_key_code);
     button.changed = is_down != button.down;
     button.down = is_down;
+
+    if (button.down) {
+      input_->active = true;
+    }
   });
 
   return {input_};
@@ -38,7 +44,7 @@ Mouse::Mouse() : input_(std::make_shared<Input>()) {
 
   input_->buttons.resize(static_cast<unsigned>(KeyboardMouseInput::MouseButton::kEnumMouseButtonSize), {});
   unsigned button_count{0};
-  for_each(std::begin(input_->buttons), std::end(input_->buttons), [&button_count](auto& button) {
+  std::ranges::for_each(input_->buttons, [&button_count](auto& button) {
     button.name = KeyboardMouseInput::MouseButtonName(static_cast<KeyboardMouseInput::MouseButton>(button_count++));
   });
 
@@ -50,15 +56,19 @@ Mouse::Mouse() : input_(std::make_shared<Input>()) {
 }
 
 InputList Mouse::Poll() {
+  input_->active = false;
+
   unsigned button_count{0};
-  for_each(std::begin(input_->buttons), std::end(input_->buttons), [&button_count](Input::Button& button) {
-    auto button_idx = static_cast<KeyboardMouseInput::MouseButton>(button_count++);
-    auto optional_raylib_button_idx = RaylibInputHelpers::RaylibMouseButton(button_idx);
-    if (optional_raylib_button_idx) {
+  std::ranges::for_each(input_->buttons, [&button_count, this](Input::Button& button) {
+    const auto button_idx = static_cast<KeyboardMouseInput::MouseButton>(button_count++);
+    if (const auto optional_raylib_button_idx = RaylibInputHelpers::RaylibMouseButton(button_idx)) {
       // TODO(Menno 03.06.2024) IsMouseButton down might miss clicks if they happen inbetween frames?
-      bool is_down = IsMouseButtonDown(optional_raylib_button_idx.value());
+      const bool is_down = IsMouseButtonDown(optional_raylib_button_idx.value());
       button.changed = is_down != button.down;
       button.down = is_down;
+      if (button.down) {
+        input_->active = true;
+      }
     }
   });
 
@@ -70,6 +80,7 @@ InputList Mouse::Poll() {
   get_axis_ref(KeyboardMouseInput::MouseAxis::kY).value = static_cast<float>(GetMouseY());
   get_axis_ref(KeyboardMouseInput::MouseAxis::kWheel).value = GetMouseWheelMove();
 
+  // TODO(Menno 03.02.2025) Detect mouse axis activity if buttons are not pressed
   return {input_};
 }
 
@@ -100,6 +111,8 @@ InputList Touch::Poll() {
     input_->axes[0].value = 0.0f;
     input_->axes[1].value = 0.0f;
   }
+
+  input_->active = input_->buttons[0].down;
   return {input_};
 }
 }  // namespace RaylibInputHandlers

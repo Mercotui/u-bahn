@@ -3,8 +3,8 @@
 #include <absl/log/log.h>
 
 #include <format>
-#include <type_traits>
 #include <string>
+#include <type_traits>
 
 std::string KeyboardMouseInput::KeyName(KeyboardMouseInput::Key key) {
   switch (key) {

@@ -142,10 +142,14 @@ bool Game::Loop() {
   }
   EndMode3D();
 
-  DrawText(std::format("Velocity={:.1f} km/h",
-                       train_->Speed().numerical_value_in(mp_units::si::kilo<mp_units::si::metre> / mp_units::si::hour))
-               .c_str(),
-           40, 40, 20, BLACK);
+  if (show_debug_) {
+    DrawText(std::format("ActiveInput={}", controls.input_name.empty() ? "None" : controls.input_name).c_str(), 10, 10,
+             20, BLACK);
+    DrawText(std::format("Velocity={:.1f} km/h", train_->Speed().numerical_value_in(
+                                                     mp_units::si::kilo<mp_units::si::metre> / mp_units::si::hour))
+                 .c_str(),
+             10, 30, 20, BLACK);
+  }
   EndDrawing();
 
   return !WindowShouldClose();

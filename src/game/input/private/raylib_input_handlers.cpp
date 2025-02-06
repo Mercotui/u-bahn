@@ -6,6 +6,10 @@
 #include "game/input/input.h"
 #include "game/input/private/raylib_input_helpers.h"
 
+namespace {
+constexpr float kMouseActivityDetectionScale = 0.005;
+}  // namespace
+
 namespace RaylibInputHandlers {
 Keyboard::Keyboard() : input_(std::make_shared<Input>()) {
   input_->name = "Keyboard";
@@ -30,9 +34,7 @@ InputList Keyboard::Poll() {
     button.changed = is_down != button.down;
     button.down = is_down;
 
-    if (button.down) {
-      input_->active = true;
-    }
+    input_->active |= button.down;
   });
 
   return {input_};
@@ -48,9 +50,11 @@ Mouse::Mouse() : input_(std::make_shared<Input>()) {
     button.name = KeyboardMouseInput::MouseButtonName(static_cast<KeyboardMouseInput::MouseButton>(button_count++));
   });
 
-  input_->axes.resize(static_cast<unsigned>(KeyboardMouseInput::MouseAxis::kEnumMouseAxisSize), {});
+  constexpr auto number_of_axes = static_cast<unsigned>(KeyboardMouseInput::MouseAxis::kEnumMouseAxisSize);
+  axis_activity_.resize(number_of_axes);
+  input_->axes.resize(number_of_axes, {});
   unsigned axis_count{0};
-  for_each(std::begin(input_->axes), std::end(input_->axes), [&axis_count](auto& axis) {
+  std::ranges::for_each(input_->axes, [&axis_count](auto& axis) {
     axis.name = KeyboardMouseInput::MouseAxisName(static_cast<KeyboardMouseInput::MouseAxis>(axis_count++));
   });
 }
@@ -66,21 +70,27 @@ InputList Mouse::Poll() {
       const bool is_down = IsMouseButtonDown(optional_raylib_button_idx.value());
       button.changed = is_down != button.down;
       button.down = is_down;
-      if (button.down) {
-        input_->active = true;
-      }
+      input_->active |= button.down;
     }
   });
 
-  const auto get_axis_ref = [this](KeyboardMouseInput::MouseAxis axis) -> Input::Axis& {
-    return input_->axes[static_cast<unsigned>(axis)];
+  // Use the same time_point for all axes, which might produce some time variance because we don't take a single
+  // snapshot of all values. But I don't expect that to be an issue.
+  const auto time_point = std::chrono::steady_clock::now();
+  const auto update_axis = [this, &time_point](const KeyboardMouseInput::MouseAxis axis, const float value) {
+    const auto axis_index = static_cast<unsigned>(axis);
+    auto& axis_ref = input_->axes[axis_index];
+    axis_ref.value = value;
+
+    const float activity_value = value * kMouseActivityDetectionScale;
+    axis_ref.active = axis_activity_[axis_index].Detect({.time_point = time_point, .value = activity_value});
+    input_->active |= axis_ref.active;
   };
 
-  get_axis_ref(KeyboardMouseInput::MouseAxis::kX).value = static_cast<float>(GetMouseX());
-  get_axis_ref(KeyboardMouseInput::MouseAxis::kY).value = static_cast<float>(GetMouseY());
-  get_axis_ref(KeyboardMouseInput::MouseAxis::kWheel).value = GetMouseWheelMove();
+  update_axis(KeyboardMouseInput::MouseAxis::kX, static_cast<float>(GetMouseX()));
+  update_axis(KeyboardMouseInput::MouseAxis::kY, static_cast<float>(GetMouseY()));
+  update_axis(KeyboardMouseInput::MouseAxis::kWheel, GetMouseWheelMove());
 
-  // TODO(Menno 03.02.2025) Detect mouse axis activity if buttons are not pressed
   return {input_};
 }
 

@@ -53,7 +53,7 @@ InputList JoystickHandler::Poll() {
   // Creating the timepoint here is not great, as it has no correlation with the actual sample times, but I think
   // windows does not provide event timestamps, linux does, but we want to cater to the lowest common denominator.
   // We create one timepoint per Poll call to avoid getting a time diff between samples.
-  auto sample_timepoint = std::chrono::steady_clock::now();
+  const auto sample_timepoint = std::chrono::steady_clock::now();
 
   libenjoy_event event;
   while (libenjoy_poll(joy_context_, &event)) {
@@ -67,6 +67,9 @@ InputList JoystickHandler::Poll() {
       case LIBENJOY_EV_CONNECTED:
         HandleConnection(event.joy_id, event.data == 1);
         break;
+      default:
+        // Unknown event type
+        ABSL_ASSERT(false);
     }
   }
 
@@ -79,12 +82,12 @@ InputList JoystickHandler::Poll() {
   return inputs;
 }
 
-void JoystickHandler::SetConfig(int id, Input::Config config) {
-  auto input_it = joystick_inputs_.find(id);
+void JoystickHandler::SetConfig(const int id, const Input::Config config) {
+  const auto input_it = joystick_inputs_.find(id);
   if (input_it == joystick_inputs_.end()) {
     return;
   }
-  bool previously_enabled = input_it->second->config.enabled;
+  const bool previously_enabled = input_it->second->config.enabled;
   input_it->second->config = config;
 
   if (previously_enabled && !config.enabled) {
@@ -94,8 +97,9 @@ void JoystickHandler::SetConfig(int id, Input::Config config) {
   }
 }
 
-void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value, InputAxisHelpers::SampleTimePoint time_point) {
-  auto input_it = joystick_inputs_.find(id);
+void JoystickHandler::HandleAxis(const unsigned id, const unsigned axis, const int value,
+                                 const InputAxisHelpers::SampleTimePoint time_point) {
+  const auto input_it = joystick_inputs_.find(id);
   if (input_it == joystick_inputs_.end() || (axis > input_it->second->axes.size())) {
     return;
   }
@@ -103,7 +107,7 @@ void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value, InputAxi
   auto& axis_ref = input_it->second->axes[axis];
   axis_ref.value = RemapAxisRange(static_cast<float>(value));
 
-  auto activity_it = axis_activity_.find(JoystickAxisKey{.id = id, .axis = axis});
+  const auto activity_it = axis_activity_.find(JoystickAxisKey{.id = id, .axis = axis});
   if (activity_it == axis_activity_.end()) {
     axis_ref.active = false;
     return;
@@ -113,8 +117,8 @@ void JoystickHandler::HandleAxis(unsigned id, unsigned axis, int value, InputAxi
   input_it->second->active |= axis_ref.active;
 }
 
-void JoystickHandler::HandleButton(unsigned id, unsigned button, bool pressed) {
-  auto input_it = joystick_inputs_.find(id);
+void JoystickHandler::HandleButton(const unsigned id, const unsigned button, const bool pressed) {
+  const auto input_it = joystick_inputs_.find(id);
   if (input_it == joystick_inputs_.end() || (button > input_it->second->buttons.size())) {
     return;
   }
@@ -126,7 +130,7 @@ void JoystickHandler::HandleButton(unsigned id, unsigned button, bool pressed) {
   input_it->second->active = true;
 }
 
-void JoystickHandler::HandleConnection(unsigned id, bool connected) {
+void JoystickHandler::HandleConnection(const unsigned id, const bool connected) {
   if (!connected) {
     if (joysticks_.contains(id)) {
       // Note that we keep track of the joysticks that were open when they get disconnected,
@@ -161,11 +165,10 @@ void JoystickHandler::CheckReconnect() {
 void JoystickHandler::ScanAll() {
   scan_timestamp_ = steady_clock::now();
   libenjoy_enumerate(joy_context_);
-  auto list = libenjoy_get_info_list(joy_context_);
+  const auto list = libenjoy_get_info_list(joy_context_);
 
   for (int i = 0; i < list->count; i++) {
-    auto entry = list->list[i];
-    if (!joystick_inputs_.contains(entry->id)) {
+    if (const auto entry = list->list[i]; !joystick_inputs_.contains(entry->id)) {
       auto input = std::make_shared<Input>();
       input->id = static_cast<int>(entry->id);
       input->name = entry->name;
@@ -178,7 +181,7 @@ void JoystickHandler::ScanAll() {
 }
 
 void JoystickHandler::ScanFeatures(unsigned id) {
-  auto input_it = joystick_inputs_.find(id);
+  const auto input_it = joystick_inputs_.find(id);
   if (input_it == joystick_inputs_.end()) {
     return;
   }
@@ -187,33 +190,32 @@ void JoystickHandler::ScanFeatures(unsigned id) {
     return;
   }
 
-  auto joystick_raw = joystick_raw_it->second;
-  auto& input = input_it->second;
+  const auto joystick_raw = joystick_raw_it->second;
+  const auto& input = input_it->second;
 
-  int axes_count = libenjoy_get_axes_num(joystick_raw);
+  const int axes_count = libenjoy_get_axes_num(joystick_raw);
   input->axes.resize(axes_count);
   int count = 0;
-  std::for_each(std::begin(input->axes), std::end(input->axes), [&](auto& axis) {
+  std::ranges::for_each(input->axes, [&](auto& axis) {
     axis.name = std::format("Axis {}", count + 1);
     const auto logging_prefix = std::format("joy{}axis{}", id, count + 1);
     axis_activity_.emplace(JoystickAxisKey(id, count), logging_prefix);
     count++;
   });
 
-  int button_count = libenjoy_get_buttons_num(joystick_raw_it->second);
+  const int button_count = libenjoy_get_buttons_num(joystick_raw_it->second);
   input->buttons.resize(button_count);
   count = 1;
-  std::for_each(std::begin(input->buttons), std::end(input->buttons),
-                [&count](auto& button) { button.name = std::format("Button {}", count++); });
+  std::ranges::for_each(input->buttons, [&count](auto& button) { button.name = std::format("Button {}", count++); });
 }
 
-void JoystickHandler::Open(unsigned id) {
+void JoystickHandler::Open(const unsigned id) {
   if (joysticks_.contains(id)) {
     LOG(WARNING) << "Joystick already open, refusing to open ID=" << id;
     return;
   }
 
-  auto joystick_raw = libenjoy_open_joystick(joy_context_, id);
+  const auto joystick_raw = libenjoy_open_joystick(joy_context_, id);
   if (!joystick_raw) {
     LOG(WARNING) << "Joystick open failed ID=" << id;
     return;
@@ -222,8 +224,8 @@ void JoystickHandler::Open(unsigned id) {
 
   ScanFeatures(id);
 }
-void JoystickHandler::Close(unsigned int id) {
-  auto joystick_raw_it = joysticks_.find(id);
+void JoystickHandler::Close(const unsigned int id) {
+  const auto joystick_raw_it = joysticks_.find(id);
   if (joystick_raw_it == joysticks_.end()) {
     LOG(WARNING) << "Joystick unknown, refusing to close ID=" << id;
     return;

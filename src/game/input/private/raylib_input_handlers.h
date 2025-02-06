@@ -1,9 +1,10 @@
 #pragma once
 
-#include <map>
 #include <memory>
+#include <vector>
 
 #include "game/input/input_manager_interface.h"
+#include "game/input/private/input_axis_helpers.h"
 
 namespace RaylibInputHandlers {
 class Keyboard final : public InputManagerInterface {
@@ -50,6 +51,8 @@ class Mouse final : public InputManagerInterface {
  private:
   //! the state of the mouse
   std::shared_ptr<Input> input_;
+  //! activity detectors for each axis
+  std::vector<InputAxisHelpers::ActivityDetector> axis_activity_;
 };
 
 class Touch final : public InputManagerInterface {

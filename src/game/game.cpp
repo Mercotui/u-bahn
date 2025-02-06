@@ -1,7 +1,6 @@
 #include "game/game.h"
 
 #include <mp-units/format.h>
-#include <raylib.h>
 
 #include <format>
 #include <memory>
@@ -13,6 +12,7 @@
 #include "game/world/train.h"
 #include "game/world/units.h"
 #include "platform/platform.h"
+#include "third_party/raylib/raylib.h"
 
 namespace {
 using Control::TrainControls;
@@ -75,13 +75,13 @@ Game::Game()
       controls_mapper_(std::make_unique<ControlSchemeMapper>()),
       rails_(std::make_unique<Rails>()) {
   camera_ = {0};
-  camera_.position = (::Vector3){-10.0f, -10.0f, 10.0f};
-  camera_.target = (Vector3){0.0f, 0.0f, 0.0f};
-  camera_.up = (Vector3){0.0f, 0.0f, 1.0f};
+  camera_.position = {-10.0f, -10.0f, 10.0f};
+  camera_.target = {0.0f, 0.0f, 0.0f};
+  camera_.up = {0.0f, 0.0f, 1.0f};
   camera_.fovy = 45.0f;
-  camera_.projection = CAMERA_PERSPECTIVE;
+  camera_.projection = Raylib::CAMERA_PERSPECTIVE;
 
-  SetTargetFPS(60);
+  Raylib::SetTargetFPS(60);
 
   Rails::SegmentId id_1 = {1};
   Rails::SegmentId id_2 = {2};
@@ -124,15 +124,15 @@ Game::~Game() = default;
 
 bool Game::Loop() {
   auto controls_variant = controls_mapper_->Map(input_->Poll(), Control::Mode::kTrain);
-  Units::TimeDelta time = GetFrameTime() * mp_units::si::second;
+  Units::TimeDelta time = Raylib::GetFrameTime() * mp_units::si::second;
   const auto controls = get<TrainControls>(controls_variant);
   if (controls.show_debug) {
     show_debug_ = !show_debug_;
   }
   train_->Control(controls, time);
 
-  BeginDrawing();
-  ClearBackground(RAYWHITE);
+  Raylib::BeginDrawing();
+  Raylib::ClearBackground(Raylib::RAYWHITE);
 
   BeginMode3D(camera_);
   train_->Draw();
@@ -140,17 +140,18 @@ bool Game::Loop() {
     rails_->DrawDebug();
     train_->DrawDebug();
   }
-  EndMode3D();
+  Raylib::EndMode3D();
 
   if (show_debug_) {
-    DrawText(std::format("ActiveInput={}", controls.input_name.empty() ? "None" : controls.input_name).c_str(), 10, 10,
-             20, BLACK);
-    DrawText(std::format("Velocity={:.1f} km/h", train_->Speed().numerical_value_in(
-                                                     mp_units::si::kilo<mp_units::si::metre> / mp_units::si::hour))
-                 .c_str(),
-             10, 30, 20, BLACK);
+    Raylib::DrawText(std::format("ActiveInput={}", controls.input_name.empty() ? "None" : controls.input_name).c_str(),
+                     10, 10, 20, Raylib::BLACK);
+    Raylib::DrawText(
+        std::format("Velocity={:.1f} km/h",
+                    train_->Speed().numerical_value_in(mp_units::si::kilo<mp_units::si::metre> / mp_units::si::hour))
+            .c_str(),
+        10, 30, 20, Raylib::BLACK);
   }
-  EndDrawing();
+  Raylib::EndDrawing();
 
-  return !WindowShouldClose();
+  return !Raylib::WindowShouldClose();
 }

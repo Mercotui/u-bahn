@@ -1,11 +1,12 @@
 #include "game/world/private/rail_segment.h"
 
 #include <absl/log/log.h>
-#include <raylib.h>
 
 #include <ranges>
-#include <vector>
 #include <tuple>
+#include <vector>
+
+#include "third_party/raylib/raylib.h"
 
 namespace {
 using mp_units::si::metre;
@@ -24,7 +25,7 @@ std::vector<bezier::Point> ToBezierPoints(const std::vector<World::WorldSpaceCoo
   return result;
 }
 
-Vector3 ToRaylibVector3(const bezier::Point& point) {
+Raylib::Vector3 ToRaylibVector3(const bezier::Point& point) {
   return {.x = static_cast<float>(point.x), .y = static_cast<float>(point.y), .z = 0.0f};
 }
 
@@ -44,11 +45,11 @@ Rails::SegmentTraverseDirection DetermineNextTraverseDirection(
 }
 
 constexpr unsigned kDebugDrawSampleCount{5};
-constexpr Vector3 kDebugDrawControlPointSize{0.2f, 0.2f, 0.2f};
-constexpr Color kDebugDrawSampleColor{BLUE};
-constexpr Color kDebugDrawControlColor{PURPLE};
-constexpr Color kDebugDrawBeginColor{GREEN};
-constexpr Color kDebugDrawEndColor{DARKBLUE};
+constexpr Raylib::Vector3 kDebugDrawControlPointSize{0.2f, 0.2f, 0.2f};
+constexpr auto kDebugDrawSampleColor{Raylib::BLUE};
+constexpr auto kDebugDrawControlColor{Raylib::PURPLE};
+constexpr auto kDebugDrawBeginColor{Raylib::GREEN};
+constexpr auto kDebugDrawEndColor{Raylib::DARKBLUE};
 }  // namespace
 
 RailSegment::RailSegment(const std::vector<World::WorldSpaceCoordinates>& curve_points) {
@@ -160,19 +161,19 @@ void RailSegment::DrawDebug() const {
         // Draw the lines between each sample
         for (std::tuple sample_pair : samples | std::views::adjacent<2>) {
           auto [start, end] = sample_pair;
-          DrawLine3D(ToRaylibVector3(start), ToRaylibVector3(end), kDebugDrawSampleColor);
+          Raylib::DrawLine3D(ToRaylibVector3(start), ToRaylibVector3(end), kDebugDrawSampleColor);
         }
 
         // Draw curve's control points except start and end
         for (int i = arg.size() - 2; i > 0; i--) {
           auto current_point = ToRaylibVector3(arg[i]);
-          DrawCubeV(current_point, kDebugDrawControlPointSize, kDebugDrawControlColor);
+          Raylib::DrawCubeV(current_point, kDebugDrawControlPointSize, kDebugDrawControlColor);
         }
 
         // Draw beginning and end points, we sample NEAR the end-points,
         // otherwise they would overlap with the connecting segment.
-        DrawCubeV(ToRaylibVector3(arg.valueAt(0.01)), kDebugDrawControlPointSize, kDebugDrawBeginColor);
-        DrawCubeV(ToRaylibVector3(arg.valueAt(0.99)), kDebugDrawControlPointSize, kDebugDrawEndColor);
+        Raylib::DrawCubeV(ToRaylibVector3(arg.valueAt(0.01)), kDebugDrawControlPointSize, kDebugDrawBeginColor);
+        Raylib::DrawCubeV(ToRaylibVector3(arg.valueAt(0.99)), kDebugDrawControlPointSize, kDebugDrawEndColor);
       },
       curve_);
 }

@@ -99,7 +99,7 @@ class Rails {
    * Traverse distance along the rails from starting point position.
    * @param initial_location
    * @param requested_distance
-   * @return the new location after traversal, and a bool indicating whether or not the full distance was traversed
+   * @return the new location after traversal, and a bool indicating whether the full distance was traversed
    */
   std::pair<Location, bool> Traverse(const Location& initial_location, Units::Distance requested_distance) const;
 

@@ -2,369 +2,367 @@
 
 #include <absl/log/log.h>
 
-#include <type_traits>
-
 namespace {
 using KeyboardMouseInput::Key;
 }  // namespace
 
-KeyboardKey RaylibInputHelpers::RaylibKeyboardKey(KeyboardMouseInput::Key key) {
+Raylib::KeyboardKey RaylibInputHelpers::RaylibKeyboardKey(const Key key) {
   switch (key) {
     case Key::kApostrophe: {
-      return KEY_APOSTROPHE;
+      return Raylib::KEY_APOSTROPHE;
     }
     case Key::kComma: {
-      return KEY_COMMA;
+      return Raylib::KEY_COMMA;
     }
     case Key::kMinus: {
-      return KEY_MINUS;
+      return Raylib::KEY_MINUS;
     }
     case Key::kPeriod: {
-      return KEY_PERIOD;
+      return Raylib::KEY_PERIOD;
     }
     case Key::kSlash: {
-      return KEY_SLASH;
+      return Raylib::KEY_SLASH;
     }
     case Key::k0: {
-      return KEY_ZERO;
+      return Raylib::KEY_ZERO;
     }
     case Key::k1: {
-      return KEY_ONE;
+      return Raylib::KEY_ONE;
     }
     case Key::k2: {
-      return KEY_TWO;
+      return Raylib::KEY_TWO;
     }
     case Key::k3: {
-      return KEY_THREE;
+      return Raylib::KEY_THREE;
     }
     case Key::k4: {
-      return KEY_FOUR;
+      return Raylib::KEY_FOUR;
     }
     case Key::k5: {
-      return KEY_FIVE;
+      return Raylib::KEY_FIVE;
     }
     case Key::k6: {
-      return KEY_SIX;
+      return Raylib::KEY_SIX;
     }
     case Key::k7: {
-      return KEY_SEVEN;
+      return Raylib::KEY_SEVEN;
     }
     case Key::k8: {
-      return KEY_EIGHT;
+      return Raylib::KEY_EIGHT;
     }
     case Key::k9: {
-      return KEY_NINE;
+      return Raylib::KEY_NINE;
     }
     case Key::kSemicolon: {
-      return KEY_SEMICOLON;
+      return Raylib::KEY_SEMICOLON;
     }
     case Key::kEqual: {
-      return KEY_EQUAL;
+      return Raylib::KEY_EQUAL;
     }
     case Key::kA: {
-      return KEY_A;
+      return Raylib::KEY_A;
     }
     case Key::kB: {
-      return KEY_B;
+      return Raylib::KEY_B;
     }
     case Key::kC: {
-      return KEY_C;
+      return Raylib::KEY_C;
     }
     case Key::kD: {
-      return KEY_D;
+      return Raylib::KEY_D;
     }
     case Key::kE: {
-      return KEY_E;
+      return Raylib::KEY_E;
     }
     case Key::kF: {
-      return KEY_F;
+      return Raylib::KEY_F;
     }
     case Key::kG: {
-      return KEY_G;
+      return Raylib::KEY_G;
     }
     case Key::kH: {
-      return KEY_H;
+      return Raylib::KEY_H;
     }
     case Key::kI: {
-      return KEY_I;
+      return Raylib::KEY_I;
     }
     case Key::kJ: {
-      return KEY_J;
+      return Raylib::KEY_J;
     }
     case Key::kK: {
-      return KEY_K;
+      return Raylib::KEY_K;
     }
     case Key::kL: {
-      return KEY_L;
+      return Raylib::KEY_L;
     }
     case Key::kM: {
-      return KEY_M;
+      return Raylib::KEY_M;
     }
     case Key::kN: {
-      return KEY_N;
+      return Raylib::KEY_N;
     }
     case Key::kO: {
-      return KEY_O;
+      return Raylib::KEY_O;
     }
     case Key::kP: {
-      return KEY_P;
+      return Raylib::KEY_P;
     }
     case Key::kQ: {
-      return KEY_Q;
+      return Raylib::KEY_Q;
     }
     case Key::kR: {
-      return KEY_R;
+      return Raylib::KEY_R;
     }
     case Key::kS: {
-      return KEY_S;
+      return Raylib::KEY_S;
     }
     case Key::kT: {
-      return KEY_T;
+      return Raylib::KEY_T;
     }
     case Key::kU: {
-      return KEY_U;
+      return Raylib::KEY_U;
     }
     case Key::kV: {
-      return KEY_V;
+      return Raylib::KEY_V;
     }
     case Key::kW: {
-      return KEY_W;
+      return Raylib::KEY_W;
     }
     case Key::kX: {
-      return KEY_X;
+      return Raylib::KEY_X;
     }
     case Key::kY: {
-      return KEY_Y;
+      return Raylib::KEY_Y;
     }
     case Key::kZ: {
-      return KEY_Z;
+      return Raylib::KEY_Z;
     }
     case Key::kLeftBracket: {
-      return KEY_LEFT_BRACKET;
+      return Raylib::KEY_LEFT_BRACKET;
     }
     case Key::kBackslash: {
-      return KEY_BACKSLASH;
+      return Raylib::KEY_BACKSLASH;
     }
     case Key::kRightBracket: {
-      return KEY_RIGHT_BRACKET;
+      return Raylib::KEY_RIGHT_BRACKET;
     }
     case Key::kGrave: {
-      return KEY_GRAVE;
+      return Raylib::KEY_GRAVE;
     }
     case Key::kSpace: {
-      return KEY_SPACE;
+      return Raylib::KEY_SPACE;
     }
     case Key::kEscape: {
-      return KEY_ESCAPE;
+      return Raylib::KEY_ESCAPE;
     }
     case Key::kEnter: {
-      return KEY_ENTER;
+      return Raylib::KEY_ENTER;
     }
     case Key::kTab: {
-      return KEY_TAB;
+      return Raylib::KEY_TAB;
     }
     case Key::kBackspace: {
-      return KEY_BACKSPACE;
+      return Raylib::KEY_BACKSPACE;
     }
     case Key::kInsert: {
-      return KEY_INSERT;
+      return Raylib::KEY_INSERT;
     }
     case Key::kDelete: {
-      return KEY_DELETE;
+      return Raylib::KEY_DELETE;
     }
     case Key::kRight: {
-      return KEY_RIGHT;
+      return Raylib::KEY_RIGHT;
     }
     case Key::kLeft: {
-      return KEY_LEFT;
+      return Raylib::KEY_LEFT;
     }
     case Key::kDown: {
-      return KEY_DOWN;
+      return Raylib::KEY_DOWN;
     }
     case Key::kUp: {
-      return KEY_UP;
+      return Raylib::KEY_UP;
     }
     case Key::kPageUp: {
-      return KEY_PAGE_UP;
+      return Raylib::KEY_PAGE_UP;
     }
     case Key::kPageDown: {
-      return KEY_PAGE_DOWN;
+      return Raylib::KEY_PAGE_DOWN;
     }
     case Key::kHome: {
-      return KEY_HOME;
+      return Raylib::KEY_HOME;
     }
     case Key::kEnd: {
-      return KEY_END;
+      return Raylib::KEY_END;
     }
     case Key::kCapsLock: {
-      return KEY_CAPS_LOCK;
+      return Raylib::KEY_CAPS_LOCK;
     }
     case Key::kScrollLock: {
-      return KEY_SCROLL_LOCK;
+      return Raylib::KEY_SCROLL_LOCK;
     }
     case Key::kNumLock: {
-      return KEY_NUM_LOCK;
+      return Raylib::KEY_NUM_LOCK;
     }
     case Key::kPrintScreen: {
-      return KEY_PRINT_SCREEN;
+      return Raylib::KEY_PRINT_SCREEN;
     }
     case Key::kPause: {
-      return KEY_PAUSE;
+      return Raylib::KEY_PAUSE;
     }
     case Key::kF1: {
-      return KEY_F1;
+      return Raylib::KEY_F1;
     }
     case Key::kF2: {
-      return KEY_F2;
+      return Raylib::KEY_F2;
     }
     case Key::kF3: {
-      return KEY_F3;
+      return Raylib::KEY_F3;
     }
     case Key::kF4: {
-      return KEY_F4;
+      return Raylib::KEY_F4;
     }
     case Key::kF5: {
-      return KEY_F5;
+      return Raylib::KEY_F5;
     }
     case Key::kF6: {
-      return KEY_F6;
+      return Raylib::KEY_F6;
     }
     case Key::kF7: {
-      return KEY_F7;
+      return Raylib::KEY_F7;
     }
     case Key::kF8: {
-      return KEY_F8;
+      return Raylib::KEY_F8;
     }
     case Key::kF9: {
-      return KEY_F9;
+      return Raylib::KEY_F9;
     }
     case Key::kF10: {
-      return KEY_F10;
+      return Raylib::KEY_F10;
     }
     case Key::kF11: {
-      return KEY_F11;
+      return Raylib::KEY_F11;
     }
     case Key::kF12: {
-      return KEY_F12;
+      return Raylib::KEY_F12;
     }
     case Key::kLeftShift: {
-      return KEY_LEFT_SHIFT;
+      return Raylib::KEY_LEFT_SHIFT;
     }
     case Key::kLeftControl: {
-      return KEY_LEFT_CONTROL;
+      return Raylib::KEY_LEFT_CONTROL;
     }
     case Key::kLeftAlt: {
-      return KEY_LEFT_ALT;
+      return Raylib::KEY_LEFT_ALT;
     }
     case Key::kLeftSuper: {
-      return KEY_LEFT_SUPER;
+      return Raylib::KEY_LEFT_SUPER;
     }
     case Key::kRightShift: {
-      return KEY_RIGHT_SHIFT;
+      return Raylib::KEY_RIGHT_SHIFT;
     }
     case Key::kRightControl: {
-      return KEY_RIGHT_CONTROL;
+      return Raylib::KEY_RIGHT_CONTROL;
     }
     case Key::kRightAlt: {
-      return KEY_RIGHT_ALT;
+      return Raylib::KEY_RIGHT_ALT;
     }
     case Key::kRightSuper: {
-      return KEY_RIGHT_SUPER;
+      return Raylib::KEY_RIGHT_SUPER;
     }
     case Key::kMenu: {
-      return KEY_MENU;
+      return Raylib::KEY_MENU;
     }
     case Key::kKeypad0: {
-      return KEY_KP_0;
+      return Raylib::KEY_KP_0;
     }
     case Key::kKeypad1: {
-      return KEY_KP_1;
+      return Raylib::KEY_KP_1;
     }
     case Key::kKeypad2: {
-      return KEY_KP_2;
+      return Raylib::KEY_KP_2;
     }
     case Key::kKeypad3: {
-      return KEY_KP_3;
+      return Raylib::KEY_KP_3;
     }
     case Key::kKeypad4: {
-      return KEY_KP_4;
+      return Raylib::KEY_KP_4;
     }
     case Key::kKeypad5: {
-      return KEY_KP_5;
+      return Raylib::KEY_KP_5;
     }
     case Key::kKeypad6: {
-      return KEY_KP_6;
+      return Raylib::KEY_KP_6;
     }
     case Key::kKeypad7: {
-      return KEY_KP_7;
+      return Raylib::KEY_KP_7;
     }
     case Key::kKeypad8: {
-      return KEY_KP_8;
+      return Raylib::KEY_KP_8;
     }
     case Key::kKeypad9: {
-      return KEY_KP_9;
+      return Raylib::KEY_KP_9;
     }
     case Key::kKeypadDecimal: {
-      return KEY_KP_DECIMAL;
+      return Raylib::KEY_KP_DECIMAL;
     }
     case Key::kKeypadDivide: {
-      return KEY_KP_DIVIDE;
+      return Raylib::KEY_KP_DIVIDE;
     }
     case Key::kKeypadMultiply: {
-      return KEY_KP_MULTIPLY;
+      return Raylib::KEY_KP_MULTIPLY;
     }
     case Key::kKeypadSubtract: {
-      return KEY_KP_SUBTRACT;
+      return Raylib::KEY_KP_SUBTRACT;
     }
     case Key::kKeypadAdd: {
-      return KEY_KP_ADD;
+      return Raylib::KEY_KP_ADD;
     }
     case Key::kKeypadEnter: {
-      return KEY_KP_ENTER;
+      return Raylib::KEY_KP_ENTER;
     }
     case Key::kKeypadEqual: {
-      return KEY_KP_EQUAL;
+      return Raylib::KEY_KP_EQUAL;
     }
     case Key::kAndroidBack: {
-      return KEY_BACK;
+      return Raylib::KEY_BACK;
     }
     case Key::kAndroidMenu: {
-      return KEY_MENU;
+      return Raylib::KEY_MENU;
     }
     case Key::kAndroidVolumeUp: {
-      return KEY_VOLUME_UP;
+      return Raylib::KEY_VOLUME_UP;
     }
     case Key::kAndroidVolumeDown: {
-      return KEY_VOLUME_DOWN;
+      return Raylib::KEY_VOLUME_DOWN;
     }
     default: {
-      return KEY_NULL;
+      return Raylib::KEY_NULL;
     }
   }
 }
 
-std::optional<MouseButton> RaylibInputHelpers::RaylibMouseButton(KeyboardMouseInput::MouseButton button) {
+std::optional<Raylib::MouseButton> RaylibInputHelpers::RaylibMouseButton(KeyboardMouseInput::MouseButton button) {
   switch (button) {
     case KeyboardMouseInput::MouseButton::kLeft: {
-      return MOUSE_BUTTON_LEFT;
+      return Raylib::MOUSE_BUTTON_LEFT;
     }
     case KeyboardMouseInput::MouseButton::kRight: {
-      return MOUSE_BUTTON_RIGHT;
+      return Raylib::MOUSE_BUTTON_RIGHT;
     }
     case KeyboardMouseInput::MouseButton::kMiddle: {
-      return MOUSE_BUTTON_MIDDLE;
+      return Raylib::MOUSE_BUTTON_MIDDLE;
     }
     case KeyboardMouseInput::MouseButton::kSide: {
-      return MOUSE_BUTTON_SIDE;
+      return Raylib::MOUSE_BUTTON_SIDE;
     }
     case KeyboardMouseInput::MouseButton::kExtra: {
-      return MOUSE_BUTTON_EXTRA;
+      return Raylib::MOUSE_BUTTON_EXTRA;
     }
     case KeyboardMouseInput::MouseButton::kForward: {
-      return MOUSE_BUTTON_FORWARD;
+      return Raylib::MOUSE_BUTTON_FORWARD;
     }
     case KeyboardMouseInput::MouseButton::kBack: {
-      return MOUSE_BUTTON_BACK;
+      return Raylib::MOUSE_BUTTON_BACK;
     }
     default: {
       return std::nullopt;

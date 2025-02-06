@@ -1,7 +1,5 @@
 #pragma once
 
-#include <raylib.h>
-
 #include <array>
 #include <memory>
 #include <utility>
@@ -10,6 +8,7 @@
 #include "game/control/control.h"
 #include "game/world/rails.h"
 #include "game/world/units.h"
+#include "third_party/raylib/raylib.h"
 
 class Train {
  public:
@@ -29,5 +28,5 @@ class Train {
   double direction_{1.0};
   Units::Speed speed_{};
 
-  Model model_{};
+  Raylib::Model model_{};
 };

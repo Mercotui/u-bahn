@@ -1,13 +1,13 @@
 #include "game/world/train.h"
 
 #include <absl/log/log.h>
-#include <raylib.h>
-#include <raymath.h>
 
 #include <utility>
 
 #include "game/world/units.h"
 #include "game/world/world.h"
+#include "third_party/raylib/raylib.h"
+#include "third_party/raylib/raymath.h"
 
 namespace {
 using Control::TrainControls;
@@ -27,11 +27,11 @@ constexpr auto kCarBogieDistance = -0.4 * metre;
 constexpr auto kCarDistance = -4.6 * metre;
 
 constexpr float kModelScale{0.3f};
-constexpr Vector3 kModelScale3D{kModelScale, kModelScale, kModelScale};
-constexpr Vector3 kModelRotationAxis{0.0, 0.0, 1.0};
+constexpr Raylib::Vector3 kModelScale3D{kModelScale, kModelScale, kModelScale};
+constexpr Raylib::Vector3 kModelRotationAxis{0.0, 0.0, 1.0};
 
-constexpr Vector3 kDebugDrawPointSize{0.2f, 0.2f, 2.0f};
-constexpr Color kDebugDrawFrontColor{BLACK};
+constexpr Raylib::Vector3 kDebugDrawPointSize{0.2f, 0.2f, 2.0f};
+constexpr Raylib::Color kDebugDrawFrontColor{Raylib::BLACK};
 
 float fToNumericalFromOrigin(World::Coordinate coordinate) {
   return static_cast<float>(coordinate.quantity_from(World::origin).numerical_value_in(metre));
@@ -55,7 +55,7 @@ bool ApplyDistance(const Rails& rails, const Units::Distance distance, auto&& ca
   return true;
 }
 
-Vector3 ToRaylibVector3(const World::WorldSpaceCoordinates& world_space_coordinates) {
+Raylib::Vector3 ToRaylibVector3(const World::WorldSpaceCoordinates& world_space_coordinates) {
   float x = fToNumericalFromOrigin(world_space_coordinates.x);
   float y = fToNumericalFromOrigin(world_space_coordinates.y);
   float z = fToNumericalFromOrigin(world_space_coordinates.z);
@@ -76,7 +76,7 @@ Train::Train(const Rails& rails, const Rails::Location location, const int car_c
     return std::make_pair(car_front, car_back);
   });
 
-  model_ = LoadModel("resources/lowpoly_berlin_u-bahn/untitled.glb");
+  model_ = Raylib::LoadModel("resources/lowpoly_berlin_u-bahn/untitled.glb");
 }
 
 Train::~Train() { UnloadModel(model_); }
@@ -111,11 +111,11 @@ void Train::Draw() const {
     const auto position_1 = rails_.WorldSpace(car.first);
     const auto position_2 = rails_.WorldSpace(car.second);
 
-    Vector3 point_1 = ToRaylibVector3(position_1);
-    Vector3 point_2 = ToRaylibVector3(position_2);
-    Vector3 point_tmp = Vector3Subtract(point_2, point_1);
+    Raylib::Vector3 point_1 = ToRaylibVector3(position_1);
+    Raylib::Vector3 point_2 = ToRaylibVector3(position_2);
+    Raylib::Vector3 point_tmp = Vector3Subtract(point_2, point_1);
     float angle = (atan2(point_tmp.y, point_tmp.x) * (180.0f / PI)) - 90.0f;
-    DrawModelEx(model_, point_1, kModelRotationAxis, angle, kModelScale3D, YELLOW);
+    DrawModelEx(model_, point_1, kModelRotationAxis, angle, kModelScale3D, Raylib::YELLOW);
   }
 }
 

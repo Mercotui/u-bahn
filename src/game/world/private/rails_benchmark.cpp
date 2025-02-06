@@ -24,11 +24,11 @@ static void BM_SomeFunction(benchmark::State& state) {  // NOLINT(runtime/refere
   rails.AddSegment(id_1, {point_1, point_2, point_3, point_4}, {{id_2}});
   rails.AddSegment(id_2, {point_4, point_1}, {{id_1}});
 
-  Rails::Location location{.segment = id_1, .intra_segment_location = {}};
+  Rails::Location initial_location{.segment = id_1, .intra_segment_location = {}};
 
   for (auto _ : state) {  // This code gets timed
-    location = rails.Traverse(location, kTranslationDistance);
-    const auto point = rails.WorldSpace(location);
+    const auto [new_location, completed] = rails.Traverse(initial_location, kTranslationDistance);
+    const auto point = rails.WorldSpace(new_location);
   }
 }
 

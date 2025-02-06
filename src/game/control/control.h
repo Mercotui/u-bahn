@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+#include <string>
 
 #include "game/input/input.h"
 
@@ -16,6 +17,7 @@ struct MenuControls {
 };
 
 struct TrainControls {
+  std::string input_name;
   Input::Type input_type;
 
   float throttle{};

@@ -1,5 +1,7 @@
 #include "game/control/control_scheme_mapper.h"
 
+#include <absl/base/macros.h>
+
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -31,6 +33,7 @@ float GetAxisValue(const std::shared_ptr<Input>& input, MouseAxis axis) {
 
 std::shared_ptr<Input> GetActiveInput(const std::vector<std::shared_ptr<Input>>& inputs) {
   for (const auto& input : inputs) {
+    // TODO(Menno 06.02.2025) Merge all active inputs together so that moving the mouse does not block keyboard input
     if (input->active) {
       return input;
     }
@@ -47,7 +50,9 @@ Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
     case Mode::kTrain: {
       if (input) {
         if (input->type == Input::Type::kKeyboard) {
-          return TrainControls{.throttle = GetButton(input, Key::kW).down ? 1.0f : 0.0f,
+          return TrainControls{.input_name = input->name,
+                               .input_type = input->type,
+                               .throttle = GetButton(input, Key::kW).down ? 1.0f : 0.0f,
                                .brake = GetButton(input, Key::kS).down ? 1.0f : 0.0f,
                                .reverse = DetectDownStroke(GetButton(input, Key::kR)),
                                .show_debug = DetectDownStroke(GetButton(input, Key::kPeriod))};
@@ -62,7 +67,8 @@ Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
             throttle = std::max(0.0f, drag_diff);
             brake = std::max(0.0f, -drag_diff);
           }
-          return TrainControls{.throttle = throttle, .brake = brake};
+          return TrainControls{
+              .input_name = input->name, .input_type = input->type, .throttle = throttle, .brake = brake};
         } else if (input->type == Input::Type::kTouch) {
           auto& button = input->buttons[0];
           float throttle{};
@@ -74,9 +80,13 @@ Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
             throttle = std::max(0.0f, drag_diff);
             brake = std::max(0.0f, -drag_diff);
           }
-          return TrainControls{.throttle = throttle, .brake = brake};
+          return TrainControls{
+              .input_name = input->name, .input_type = input->type, .throttle = throttle, .brake = brake};
+        } else if (input->type == Input::Type::kJoystick) {
+          return TrainControls{.input_name = input->name, .input_type = input->type, .throttle = input->axes[2].value};
         } else {
-          return TrainControls{.throttle = input->axes[2].value};
+          // Unknown input type
+          ABSL_ASSERT(false);
         }
       } else {
         return TrainControls{};

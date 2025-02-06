@@ -1,7 +1,6 @@
 #include <absl/log/globals.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
-#include <raylib.h>
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
 #endif
@@ -9,23 +8,24 @@
 #include <cstdio>
 
 #include "game/game.h"
+#include "third_party/raylib/raylib.h"
 
 namespace {
 constexpr auto kInitialScreenWidth = 1300;
 constexpr auto kInitialScreenHeight = 900;
 
-absl::LogSeverity RaylibToAbslLogLevel(TraceLogLevel raylib_log_level) {
+absl::LogSeverity RaylibToAbslLogLevel(const Raylib::TraceLogLevel raylib_log_level) {
   switch (raylib_log_level) {
-    case LOG_DEBUG:
+    case Raylib::LOG_DEBUG:
       // absl doesn't go below info level unlike every other log library for some reason
       [[fallthrough]];
-    case LOG_INFO:
+    case Raylib::LOG_INFO:
       return absl::LogSeverity::kInfo;
-    case LOG_WARNING:
+    case Raylib::LOG_WARNING:
       return absl::LogSeverity::kWarning;
-    case LOG_ERROR:
+    case Raylib::LOG_ERROR:
       return absl::LogSeverity::kError;
-    case LOG_FATAL:
+    case Raylib::LOG_FATAL:
       return absl::LogSeverity::kFatal;
     default:
       // failsafe I guess, if log level is unknown then we treat it as an error.
@@ -36,19 +36,19 @@ absl::LogSeverity RaylibToAbslLogLevel(TraceLogLevel raylib_log_level) {
 
 int main() {
   absl::InitializeLog();
-  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kWarning);
 
   // divert raylib logging into absl logging
-  SetTraceLogCallback(+[](int level, const char* text, va_list args) {
+  Raylib::SetTraceLogCallback(+[](int level, const char* text, va_list args) {
     constexpr auto kMaxLogLength = 2048;
     char expanded_text[kMaxLogLength];
     std::vsnprintf(expanded_text, kMaxLogLength, text, args);
-    const auto absl_level = RaylibToAbslLogLevel(static_cast<TraceLogLevel>(level));
+    const auto absl_level = RaylibToAbslLogLevel(static_cast<Raylib::TraceLogLevel>(level));
     LOG(LEVEL(absl_level)) << "raylib: " << expanded_text;
   });
 
-  SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI | FLAG_MSAA_4X_HINT);
-  InitWindow(kInitialScreenWidth, kInitialScreenHeight, "U-Bahn");
+  Raylib::SetConfigFlags(Raylib::FLAG_WINDOW_RESIZABLE | Raylib::FLAG_WINDOW_HIGHDPI | Raylib::FLAG_MSAA_4X_HINT);
+  Raylib::InitWindow(kInitialScreenWidth, kInitialScreenHeight, "U-Bahn");
 
   Game game{};
 
@@ -59,6 +59,6 @@ int main() {
   }
 #endif
 
-  CloseWindow();
+  Raylib::CloseWindow();
   return 0;
 }

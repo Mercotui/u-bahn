@@ -1,9 +1,9 @@
 #pragma once
 
-#include <raylib.h>
-
 #include <memory>
 #include <string>
+
+#include "third_party/raylib/raylib.h"
 
 //! Forward Declared, defined in game/input/input_manager_interface.h
 class InputManagerInterface;
@@ -24,7 +24,7 @@ class Game {
  private:
   bool running_{true};
   bool show_debug_{false};
-  Camera3D camera_{};
+  Raylib::Camera3D camera_{};
   std::unique_ptr<Rails> rails_;
   std::unique_ptr<Train> train_;
 

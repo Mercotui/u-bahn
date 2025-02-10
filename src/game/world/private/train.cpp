@@ -2,6 +2,7 @@
 
 #include <absl/log/log.h>
 
+#include <ranges>
 #include <utility>
 
 #include "game/world/units.h"
@@ -23,17 +24,17 @@ constexpr auto kTrainMaxAcceleration = 1.5 * (metre / (second * second));
 constexpr auto kTrainMaxDeceleration = 5.0 * (metre / (second * second));
 constexpr auto kTrainMinimumReverseSpeed = quantity(0.1 * kilo<metre> / hour).in(metre / second);
 
-constexpr auto kCarBogieDistance = -0.4 * metre;
-constexpr auto kCarDistance = -4.6 * metre;
+constexpr auto kCarBogieDistance = -9.5 * metre;
+constexpr auto kCarDistance = -16.05 * metre;
 
-constexpr float kModelScale{0.3f};
+constexpr float kModelScale{1.0f};
 constexpr Raylib::Vector3 kModelScale3D{kModelScale, kModelScale, kModelScale};
 constexpr Raylib::Vector3 kModelRotationAxis{0.0, 0.0, 1.0};
 
 constexpr Raylib::Vector3 kDebugDrawPointSize{0.2f, 0.2f, 2.0f};
-constexpr Raylib::Color kDebugDrawFrontColor{Raylib::BLACK};
+constexpr auto kDebugDrawFrontColor{Raylib::BLACK};
 
-float fToNumericalFromOrigin(World::Coordinate coordinate) {
+float fToNumericalFromOrigin(const World::Coordinate coordinate) {
   return static_cast<float>(coordinate.quantity_from(World::origin).numerical_value_in(metre));
 }
 
@@ -63,10 +64,10 @@ Raylib::Vector3 ToRaylibVector3(const World::WorldSpaceCoordinates& world_space_
 }
 }  // namespace
 
-Train::Train(const Rails& rails, const Rails::Location location, const int car_count)
+Train::Train(const Rails& rails, const Rails::Location& location, const int car_count)
     : rails_(rails), cars_(car_count) {
   int current_car{};
-  std::generate(std::begin(cars_), std::end(cars_), [this, &current_car, &location]() {
+  std::ranges::generate(cars_, [this, &current_car, &location]() {
     auto [car_front, result_front] = rails_.Traverse(location, kCarDistance * current_car++);
     auto [car_back, result_back] = rails_.Traverse(car_front, kCarBogieDistance);
     if (!(result_front && result_back)) {
@@ -76,7 +77,7 @@ Train::Train(const Rails& rails, const Rails::Location location, const int car_c
     return std::make_pair(car_front, car_back);
   });
 
-  model_ = Raylib::LoadModel("resources/lowpoly_berlin_u-bahn/untitled.glb");
+  model_ = Raylib::LoadModel("resources/berlin/f7x-attempt-1.glb");
 }
 
 Train::~Train() { UnloadModel(model_); }
@@ -107,15 +108,23 @@ void Train::Control(const TrainControls& controls, const Units::TimeDelta time) 
 }
 
 void Train::Draw() const {
-  for (auto& car : cars_) {
-    const auto position_1 = rails_.WorldSpace(car.first);
-    const auto position_2 = rails_.WorldSpace(car.second);
+  unsigned car_index = 0;
+  for (const auto& [fst, snd] : cars_) {
+    const auto position_1 = rails_.WorldSpace(fst);
+    const auto position_2 = rails_.WorldSpace(snd);
 
-    Raylib::Vector3 point_1 = ToRaylibVector3(position_1);
-    Raylib::Vector3 point_2 = ToRaylibVector3(position_2);
-    Raylib::Vector3 point_tmp = Vector3Subtract(point_2, point_1);
-    float angle = (atan2(point_tmp.y, point_tmp.x) * (180.0f / PI)) - 90.0f;
-    DrawModelEx(model_, point_1, kModelRotationAxis, angle, kModelScale3D, Raylib::YELLOW);
+    const Raylib::Vector3 point_1 = ToRaylibVector3(position_1);
+    const Raylib::Vector3 point_2 = ToRaylibVector3(position_2);
+    const Raylib::Vector3 point_tmp = Vector3Subtract(point_2, point_1);
+
+    // Get midpoint between bogies
+    const Raylib::Vector3 car_origin = Raylib::Vector3Scale(Raylib::Vector3Add(point_1, point_2), 0.5f);
+
+    // Every second car is reversed, this results in pairs of back to back cars
+    const float car_orientation_angle = (car_index % 2) ? 180.0f : 0.0f;
+    const float angle = (atan2f(point_tmp.y, point_tmp.x) * (180.0f / PI)) + car_orientation_angle;
+    Raylib::DrawModelEx(model_, car_origin, kModelRotationAxis, angle, kModelScale3D, Raylib::WHITE);
+    ++car_index;
   }
 }
 
@@ -125,6 +134,4 @@ void Train::DrawDebug() const {
   const auto back_position = rails_.WorldSpace(cars_.begin()->second);
   DrawCubeV(ToRaylibVector3(front_position), kDebugDrawPointSize, kDebugDrawFrontColor);
   DrawCubeV(ToRaylibVector3(back_position), kDebugDrawPointSize, kDebugDrawFrontColor);
-
-  // Show train debug text
 }

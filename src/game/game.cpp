@@ -16,7 +16,7 @@
 
 namespace {
 using Control::TrainControls;
-constexpr auto kRailScale{7 * mp_units::si::metre};
+constexpr auto kRailScale{15 * mp_units::si::metre};
 
 enum class UnitCircleQuadrant {
   kTopRight,
@@ -116,8 +116,8 @@ Game::Game()
                      {{id_6}, {id_5}});
 
   train_ = std::make_unique<Train>(
-      *rails_, Rails::Location{.segment = id_7, .intra_segment_direction = Rails::SegmentTraverseDirection::kBackward},
-      3);
+      *rails_, Rails::Location{.segment = id_3, .intra_segment_direction = Rails::SegmentTraverseDirection::kBackward},
+      2);
 }
 
 Game::~Game() = default;

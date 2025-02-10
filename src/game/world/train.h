@@ -12,7 +12,7 @@
 
 class Train {
  public:
-  explicit Train(const Rails& rails, Rails::Location location, int car_count);
+  explicit Train(const Rails& rails, const Rails::Location& location, int car_count);
   ~Train();
 
   void Control(const Control::TrainControls& controls, Units::TimeDelta time);

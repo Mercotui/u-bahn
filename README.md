@@ -2,4 +2,4 @@
 
 U-Bahn game
 
-See [BUILDING.md](BUILDING.md) for build instructions for each supported platform.
+See [docs/building.md](docs/building.md) for build instructions for each supported platform.

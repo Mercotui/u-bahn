@@ -6,7 +6,6 @@ if (TARGET enjoy)
     message(NOTICE "Building game input joystick support")
     add_library(game_input_joystick STATIC
             private/joystick_handler.cpp
-            private/input_axis_helpers.cpp
     )
     target_link_libraries(game_input_joystick PRIVATE absl::log enjoy)
     target_compile_definitions(game_input_joystick PUBLIC HAS_LIB_GAME_INPUT_JOYSTICK)
@@ -15,6 +14,7 @@ else ()
 endif ()
 
 add_library(game_input STATIC
+        private/input_axis_helpers.cpp
         private/input_manager.cpp
         private/raylib_input_handlers.cpp
         private/raylib_input_helpers.cpp

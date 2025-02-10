@@ -158,11 +158,15 @@ void RailSegment::DrawDebug() const {
           float t = static_cast<float>(i) / kDebugDrawSampleCount;
           samples.push_back(arg.valueAt(t));
         }
+
+#if !defined(PLATFORM_ANDROID) && !defined(PLATFORM_WEB)
+        // TODO(Menno 06.02.2025) The clang libc++ used for android and web does not yet have std::views::adjacent
         // Draw the lines between each sample
         for (std::tuple sample_pair : samples | std::views::adjacent<2>) {
           auto [start, end] = sample_pair;
           Raylib::DrawLine3D(ToRaylibVector3(start), ToRaylibVector3(end), kDebugDrawSampleColor);
         }
+#endif
 
         // Draw curve's control points except start and end
         for (int i = arg.size() - 2; i > 0; i--) {

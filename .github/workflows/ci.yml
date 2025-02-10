@@ -10,6 +10,42 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v3
       - uses: pre-commit/action@v3.0.1
+
+  build-linux:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mercotui/ubahn_buildenv:1.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Conan setup
+        run: conan profile detect
+      - name: Conan install
+        run: conan install -u -pr=profiles/linux-wayland.profile --settings=build_type=Debug --build=missing .
+      - name: Cmake configure
+        run: cmake --preset conan-linux-debug
+      - name: Build
+        run: cmake --build --preset conan-linux-debug
+      - name: Test
+        run: ctest --preset conan-linux-debug  --output-on-failure
+
+  build-web:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mercotui/ubahn_buildenv:1.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Conan setup
+        run: conan profile detect
+      - name: Conan install
+        run: conan install -u -pr:b=default -pr:h=profiles/emscripten.profile --build=missing --settings=build_type=Release .
+      - name: Cmake configure
+        run: cmake --preset conan-emscripten-release
+      - name: Build
+        run: cmake --build --preset conan-emscripten-release --target u-bahn

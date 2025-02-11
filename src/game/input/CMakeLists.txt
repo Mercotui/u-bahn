@@ -25,9 +25,10 @@ target_link_libraries(game_input PRIVATE absl::log raylib $<TARGET_NAME_IF_EXIST
 
 add_executable(input_test
         private/input_manager_unittest.cpp
-        private/joystick_handler_unittest.cpp
+        $<$<TARGET_EXISTS:game_input_joystick>:private/joystick_handler_unittest.cpp>
         private/raylib_input_handlers_unittest.cpp
         private/input_axis_helpers_unittest.cpp
 )
-target_link_libraries(input_test PRIVATE game_input game_input_joystick platform GTest::gtest GTest::gtest_main)
+target_link_libraries(input_test PRIVATE game_input $<TARGET_NAME_IF_EXISTS:game_input_joystick>
+        platform GTest::gtest GTest::gtest_main)
 add_test(NAME input_test COMMAND input_test)

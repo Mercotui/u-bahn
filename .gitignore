@@ -3,6 +3,7 @@
 CMakeUserPresets.json
 build/
 .idea/
+dist/
 *.keystore
 apk_build/
 *.apk

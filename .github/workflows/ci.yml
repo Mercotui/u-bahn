@@ -2,9 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ 'main' ]
+    tags: [ '*' ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ 'main' ]
+
+env:
+  # Determine app version, can be tag, MR and build numbers, or git commit hash
+  VERSION: |-
+    ${{
+      github.ref_type == 'tag' && github.ref_name
+      || github.event_name == 'pull_request' && format('MR{0}.{1}.{2}', github.event.pull_request.number, github.run_number, github.run_attempt)
+      || format('git.{0}', github.sha)
+    }}
 
 jobs:
   pre-commit:
@@ -15,10 +25,10 @@ jobs:
       - uses: pre-commit/action@v3.0.1
 
   build-linux:
+    needs: [ pre-commit ]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/mercotui/ubahn_buildenv:1.0
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,17 +37,17 @@ jobs:
       - name: Conan install
         run: conan install -u -pr=profiles/linux-wayland.profile --settings=build_type=Debug --build=missing .
       - name: Cmake configure
-        run: cmake --preset conan-linux-debug
+        run: cmake --preset conan-linux-debug -DUBAHN_VERSION=${{ env.VERSION }}
       - name: Build
         run: cmake --build --preset conan-linux-debug
       - name: Test
         run: ctest --preset conan-linux-debug  --output-on-failure
 
   build-web:
+    needs: [ pre-commit ]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/mercotui/ubahn_buildenv:1.0
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,6 +56,43 @@ jobs:
       - name: Conan install
         run: conan install -u -pr:b=default -pr:h=profiles/emscripten.profile --build=missing --settings=build_type=Release .
       - name: Cmake configure
-        run: cmake --preset conan-emscripten-release
+        run: cmake --preset conan-emscripten-release -DUBAHN_VERSION=${{ env.VERSION }}
       - name: Build
-        run: cmake --build --preset conan-emscripten-release --target u-bahn
+        run: cmake --build --preset conan-emscripten-release
+      - name: Package
+        run: cmake --build --preset conan-emscripten-release --target package
+      - name: Store Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'u-bahn'
+          path: ${{ format('dist/u-bahn-web-{0}.tar.gz', env.VERSION) }}
+
+  release:
+    needs: [ build-web ]
+    if: ${{ github.ref_type == 'tag' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: 'u-bahn'
+      - run: mkdir web
+      - run: tar -xzvf u-bahn-web-*.tar.gz -C ./web --strip-components=1
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'web/'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

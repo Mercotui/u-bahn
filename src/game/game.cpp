@@ -13,6 +13,7 @@
 #include "game/world/units.h"
 #include "platform/platform.h"
 #include "third_party/raylib/raylib.h"
+#include "utils/version.h"
 
 namespace {
 using Control::TrainControls;
@@ -150,6 +151,9 @@ bool Game::Loop() {
                     train_->Speed().numerical_value_in(mp_units::si::kilo<mp_units::si::metre> / mp_units::si::hour))
             .c_str(),
         10, 30, 20, Raylib::BLACK);
+
+    Raylib::DrawText(std::format("Version {}", Utils::GetVersion()).c_str(), 10, Raylib::GetScreenHeight() - 30, 20,
+                     Raylib::BLACK);
   }
   Raylib::EndDrawing();
 

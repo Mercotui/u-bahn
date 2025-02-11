@@ -31,21 +31,29 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
             --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/platform/emscripten/shell.html
     )
     set_target_properties(u-bahn PROPERTIES SUFFIX ".html")
+    # Cmake doesn't detect the files emcc creates, install them explicitly to the root of the install prefix
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/u-bahn.html DESTINATION . RENAME index.html)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/u-bahn.js DESTINATION .)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/u-bahn.wasm DESTINATION .)
 else ()
     add_subdirectory(third_party/libenjoy)
+    include(GNUInstallDirs)
+    install(TARGETS u-bahn
+            BUNDLE DESTINATION u-bahn
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 endif ()
 
+add_subdirectory(utils)
 add_subdirectory(platform)
 add_subdirectory(game/input)
 add_subdirectory(game/control)
 add_subdirectory(game/world)
 
-target_link_libraries(u-bahn PRIVATE raylib abseil::abseil platform Game::Input Game::Control Game::World)
+target_link_libraries(u-bahn PRIVATE raylib
+        abseil::abseil
+        Version::Version platform Game::Input Game::Control Game::World)
 target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)
 
-include(GNUInstallDirs)
-install(TARGETS u-bahn
-        BUNDLE DESTINATION u-bahn
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+include(cmake/packaging.cmake)

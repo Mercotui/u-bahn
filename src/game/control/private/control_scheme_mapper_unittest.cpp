@@ -9,7 +9,6 @@
 #include "game/input/keyboard_mouse.h"
 
 namespace {
-using Control::Mode;
 using KeyboardMouseInput::Key;
 
 Input::Button& GetButton(const std::shared_ptr<Input>& input, Key key) {
@@ -28,23 +27,23 @@ TEST(ControlSchemeMapperTest, MapTrainControlsKeyboard) {
   auto& r = GetButton(input, Key::kR);
 
   // Nothing pressed
-  const auto controls1 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls1 = std::get<Control::TrainControls>(controls1);
+  const auto controls1 = mapper.MapGameControls({input});
+  const auto train_controls1 = controls1.train_controls;
   ASSERT_EQ(train_controls1.throttle, 0.0f);
   ASSERT_EQ(train_controls1.brake, 0.0f);
 
   // Key W down
   w.down = true;
-  const auto controls2 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls2 = std::get<Control::TrainControls>(controls2);
+  const auto controls2 = mapper.MapGameControls({input});
+  const auto train_controls2 = controls2.train_controls;
   ASSERT_EQ(train_controls2.throttle, 1.0f);
   ASSERT_EQ(train_controls2.brake, 0.0f);
 
   // Key W lifts, key S down
   w.down = false;
   s.down = true;
-  const auto controls3 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls3 = std::get<Control::TrainControls>(controls3);
+  const auto controls3 = mapper.MapGameControls({input});
+  const auto train_controls3 = controls3.train_controls;
   ASSERT_EQ(train_controls3.throttle, 0.0f);
   ASSERT_EQ(train_controls3.brake, 1.0f);
 
@@ -52,24 +51,24 @@ TEST(ControlSchemeMapperTest, MapTrainControlsKeyboard) {
   s.down = false;
   r.down = true;
   r.changed = true;
-  const auto controls4 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls4 = std::get<Control::TrainControls>(controls4);
+  const auto controls4 = mapper.MapGameControls({input});
+  const auto train_controls4 = controls4.train_controls;
   ASSERT_EQ(train_controls4.throttle, 0.0f);
   ASSERT_EQ(train_controls4.brake, 0.0f);
   ASSERT_TRUE(train_controls4.reverse);
 
   // R still down but not changed
   r.changed = false;
-  const auto controls5 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls5 = std::get<Control::TrainControls>(controls5);
+  const auto controls5 = mapper.MapGameControls({input});
+  const auto train_controls5 = controls5.train_controls;
   ASSERT_EQ(train_controls5.throttle, 0.0f);
   ASSERT_EQ(train_controls5.brake, 0.0f);
   ASSERT_FALSE(train_controls5.reverse);
 
   // Nothing down
   r.changed = false;
-  const auto controls6 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls6 = std::get<Control::TrainControls>(controls6);
+  const auto controls6 = mapper.MapGameControls({input});
+  const auto train_controls6 = controls6.train_controls;
   ASSERT_EQ(train_controls6.throttle, 0.0f);
   ASSERT_EQ(train_controls6.brake, 0.0f);
   ASSERT_FALSE(train_controls6.reverse);
@@ -84,31 +83,31 @@ TEST(ControlSchemeMapperTest, MapTrainControlsTouch) {
                  Input::Axis{.name = "Touch Axis Vertical", .value = 1000.0f, .active = false}};
 
   // Initial touch event
-  const auto controls1 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls1 = std::get<Control::TrainControls>(controls1);
+  const auto controls1 = mapper.MapGameControls({input});
+  const auto train_controls1 = controls1.train_controls;
   ASSERT_EQ(train_controls1.throttle, 0.0f);
   ASSERT_EQ(train_controls1.brake, 0.0f);
 
   // Finger moves up towards top of screen, which has lower X coordinate
   input->axes[1].value = 500.0f;
   input->buttons[0].changed = false;
-  const auto controls2 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls2 = std::get<Control::TrainControls>(controls2);
+  const auto controls2 = mapper.MapGameControls({input});
+  const auto train_controls2 = controls2.train_controls;
   ASSERT_EQ(train_controls2.throttle, 5.0f);
   ASSERT_EQ(train_controls2.brake, 0.0f);
 
   // Finger moves down towards bottom of screen, which has higher X coordinate
   input->axes[1].value = 1500.0f;
   input->buttons[0].changed = false;
-  const auto controls3 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls3 = std::get<Control::TrainControls>(controls3);
+  const auto controls3 = mapper.MapGameControls({input});
+  const auto train_controls3 = controls3.train_controls;
   ASSERT_EQ(train_controls3.throttle, 0.0f);
   ASSERT_EQ(train_controls3.brake, 5.0f);
 
   // Finger back at starting position
   input->axes[1].value = 1000.0f;
-  const auto controls4 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls4 = std::get<Control::TrainControls>(controls4);
+  const auto controls4 = mapper.MapGameControls({input});
+  const auto train_controls4 = controls4.train_controls;
   ASSERT_EQ(train_controls4.throttle, 0.0f);
   ASSERT_EQ(train_controls4.throttle, 0.0f);
 
@@ -116,8 +115,8 @@ TEST(ControlSchemeMapperTest, MapTrainControlsTouch) {
   input->axes[1].value = 1000.0f;
   input->buttons[0].down = false;
   input->buttons[0].changed = true;
-  const auto controls5 = mapper.Map({input}, Mode::kTrain);
-  const auto train_controls5 = std::get<Control::TrainControls>(controls5);
+  const auto controls5 = mapper.MapGameControls({input});
+  const auto train_controls5 = controls5.train_controls;
   ASSERT_EQ(train_controls5.throttle, 0.0f);
   ASSERT_EQ(train_controls5.throttle, 0.0f);
 }
@@ -140,15 +139,15 @@ TEST(ControlSchemeMapperTest, MapTrainControlsActiveSwitching) {
     input->buttons[0].changed = true;
     input->buttons[0].down = true;
     input->axes[1].value = 1000.0f;
-    const auto controls1 = mapper.Map({input}, Mode::kTrain);
-    const auto train_controls1 = std::get<Control::TrainControls>(controls1);
+    const auto controls1 = mapper.MapGameControls({input});
+    const auto train_controls1 = controls1.train_controls;
     ASSERT_EQ(train_controls1.throttle, 0.0f);
 
     // Finger moves up towards top of screen, which has lower X coordinate
     input->axes[1].value = 500.0f;
     input->buttons[0].changed = false;
-    const auto controls2 = mapper.Map({input}, Mode::kTrain);
-    const auto train_controls2 = std::get<Control::TrainControls>(controls2);
+    const auto controls2 = mapper.MapGameControls({input});
+    const auto train_controls2 = controls2.train_controls;
     ASSERT_EQ(train_controls2.throttle, 5.0f);
 
     // Reset
@@ -160,16 +159,16 @@ TEST(ControlSchemeMapperTest, MapTrainControlsActiveSwitching) {
   auto do_keyboard_event = [&mapper, &input_list](const std::shared_ptr<Input>& input) {
     auto& w = GetButton(input, Key::kW);
     // Nothing pressed
-    const auto controls1 = mapper.Map({input}, Mode::kTrain);
-    const auto train_controls1 = std::get<Control::TrainControls>(controls1);
+    const auto controls1 = mapper.MapGameControls({input});
+    const auto train_controls1 = controls1.train_controls;
     ASSERT_EQ(train_controls1.throttle, 0.0f);
 
     // Key W down
     input->active = true;
     w.down = true;
     w.changed = true;
-    const auto controls2 = mapper.Map({input}, Mode::kTrain);
-    const auto train_controls2 = std::get<Control::TrainControls>(controls2);
+    const auto controls2 = mapper.MapGameControls({input});
+    const auto train_controls2 = controls2.train_controls;
     ASSERT_EQ(train_controls2.throttle, 1.0f);
     ASSERT_EQ(train_controls2.brake, 0.0f);
 

@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "camera/camera_interface.h"
 #include "game/control/control_scheme_mapper.h"
 #include "game/input/input_manager_interface.h"
 #include "game/world/rails.h"
@@ -72,25 +73,19 @@ std::vector<World::WorldSpaceCoordinates> CircleQuadrantAtOffset(const UnitCircl
 }  // namespace
 
 Game::Game()
-    : input_(InputManagerFactory::Create(Platform::GetPlatform())),
-      controls_mapper_(std::make_unique<ControlSchemeMapper>()),
-      rails_(std::make_unique<Rails>()) {
-  camera_ = {0};
-  camera_.position = {-10.0f, -10.0f, 10.0f};
-  camera_.target = {0.0f, 0.0f, 0.0f};
-  camera_.up = {0.0f, 0.0f, 1.0f};
-  camera_.fovy = 45.0f;
-  camera_.projection = Raylib::CAMERA_PERSPECTIVE;
-
+    : rails_(std::make_unique<Rails>()),
+      camera_(CameraFactory::Create()),
+      input_(InputManagerFactory::Create(Platform::GetPlatform())),
+      controls_mapper_(std::make_unique<ControlSchemeMapper>()) {
   Raylib::SetTargetFPS(60);
 
-  Rails::SegmentId id_1 = {1};
-  Rails::SegmentId id_2 = {2};
-  Rails::SegmentId id_3 = {3};
-  Rails::SegmentId id_4 = {4};
-  Rails::SegmentId id_5 = {5};
-  Rails::SegmentId id_6 = {6};
-  Rails::SegmentId id_7 = {7};
+  constexpr Rails::SegmentId id_1 = {1};
+  constexpr Rails::SegmentId id_2 = {2};
+  constexpr Rails::SegmentId id_3 = {3};
+  constexpr Rails::SegmentId id_4 = {4};
+  constexpr Rails::SegmentId id_5 = {5};
+  constexpr Rails::SegmentId id_6 = {6};
+  constexpr Rails::SegmentId id_7 = {7};
 
   // Circle
   rails_->AddSegment(id_1, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopRight, {}),
@@ -121,27 +116,28 @@ Game::Game()
       2);
 }
 
-Game::~Game() = default;
+Game::~Game() { Raylib::EnableCursor(); }
 
 bool Game::Loop() {
-  auto controls_variant = controls_mapper_->Map(input_->Poll(), Control::Mode::kTrain);
-  Units::TimeDelta time = Raylib::GetFrameTime() * mp_units::si::second;
-  const auto controls = get<TrainControls>(controls_variant);
+  const auto controls = controls_mapper_->MapGameControls(input_->Poll());
+  const Units::TimeDelta time = Raylib::GetFrameTime() * mp_units::si::second;
   if (controls.show_debug) {
     show_debug_ = !show_debug_;
   }
-  train_->Control(controls, time);
+  train_->Control(controls.train_controls, time);
+  camera_->Control(controls.camera_controls, time);
+  camera_->Target(train_->GetCenterPoint());
 
   Raylib::BeginDrawing();
   Raylib::ClearBackground(Raylib::RAYWHITE);
 
-  BeginMode3D(camera_);
+  camera_->Activate();
   train_->Draw();
   if (show_debug_) {
     rails_->DrawDebug();
     train_->DrawDebug();
   }
-  Raylib::EndMode3D();
+  camera_->Deactivate();
 
   if (show_debug_) {
     Raylib::DrawText(std::format("ActiveInput={}", controls.input_name.empty() ? "None" : controls.input_name).c_str(),

@@ -1,14 +1,11 @@
 #pragma once
 
-#include <variant>
 #include <string>
 
 #include "game/input/input.h"
 
 namespace Control {
 struct Scheme {};
-
-enum class Mode { kMenu, kTrain };
 
 struct MenuControls {
   bool cursor_active_{};
@@ -17,9 +14,6 @@ struct MenuControls {
 };
 
 struct TrainControls {
-  std::string input_name;
-  Input::Type input_type;
-
   float throttle{};
   float brake{};
 
@@ -28,10 +22,21 @@ struct TrainControls {
   bool doors_unlock_left{};
   bool doors_unlock_right{};
   bool doors_close{};
+};
+
+struct CameraControls {
+  float x{};
+  float y{};
+};
+
+struct GameControls {
+  std::string input_name;
+  Input::Type input_type{Input::Type::kKeyboard};
 
   // TODO(Menno 23.05.2024) Move this to the menu options.
   bool show_debug{};
-};
 
-using Controls = std::variant<MenuControls, TrainControls>;
-};  // namespace Control
+  CameraControls camera_controls;
+  TrainControls train_controls;
+};
+}  // namespace Control

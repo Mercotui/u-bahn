@@ -9,9 +9,9 @@
 #include "game/input/keyboard_mouse.h"
 
 namespace {
-using Control::Controls;
+using Control::CameraControls;
+using Control::GameControls;
 using Control::MenuControls;
-using Control::Mode;
 using Control::TrainControls;
 using KeyboardMouseInput::Key;
 using KeyboardMouseInput::MouseAxis;
@@ -43,58 +43,52 @@ std::shared_ptr<Input> GetActiveInput(const std::vector<std::shared_ptr<Input>>&
 }
 }  // namespace
 
-Controls ControlSchemeMapper::Map(const InputList& inputs, Control::Mode mode) {
-  auto input = GetActiveInput(inputs);
+GameControls ControlSchemeMapper::MapGameControls(const InputList& inputs) {
+  GameControls controls;
+  const auto input = GetActiveInput(inputs);
 
-  switch (mode) {
-    case Mode::kTrain: {
-      if (input) {
-        if (input->type == Input::Type::kKeyboard) {
-          return TrainControls{.input_name = input->name,
-                               .input_type = input->type,
-                               .throttle = GetButton(input, Key::kW).down ? 1.0f : 0.0f,
-                               .brake = GetButton(input, Key::kS).down ? 1.0f : 0.0f,
-                               .reverse = DetectDownStroke(GetButton(input, Key::kR)),
-                               .show_debug = DetectDownStroke(GetButton(input, Key::kPeriod))};
-        } else if (input->type == Input::Type::kMouse) {
-          auto& left_button = GetButton(input, MouseButton::kLeft);
-          float throttle{};
-          float brake{};
-          if (left_button.changed && left_button.down) {
-            mouse_drag_start_ = GetAxisValue(input, MouseAxis::kY);
-          } else if (left_button.down) {
-            float drag_diff = 0.01f * (mouse_drag_start_ - GetAxisValue(input, MouseAxis::kY));
-            throttle = std::max(0.0f, drag_diff);
-            brake = std::max(0.0f, -drag_diff);
-          }
-          return TrainControls{
-              .input_name = input->name, .input_type = input->type, .throttle = throttle, .brake = brake};
-        } else if (input->type == Input::Type::kTouch) {
-          auto& button = input->buttons[0];
-          float throttle{};
-          float brake{};
-          if (button.changed && button.down) {
-            mouse_drag_start_ = input->axes[1].value;
-          } else if (button.down) {
-            float drag_diff = 0.01f * (mouse_drag_start_ - input->axes[1].value);
-            throttle = std::max(0.0f, drag_diff);
-            brake = std::max(0.0f, -drag_diff);
-          }
-          return TrainControls{
-              .input_name = input->name, .input_type = input->type, .throttle = throttle, .brake = brake};
-        } else if (input->type == Input::Type::kJoystick) {
-          return TrainControls{.input_name = input->name, .input_type = input->type, .throttle = input->axes[2].value};
-        } else {
-          // Unknown input type
-          ABSL_ASSERT(false);
-        }
-      } else {
-        return TrainControls{};
-      }
-    }
-    default:
-    case Mode::kMenu: {
-      return MenuControls();
-    }
+  if (!input) {
+    return controls;
   }
+
+  controls.input_name = input->name;
+  controls.input_type = input->type;
+
+  if (input->type == Input::Type::kKeyboard) {
+    controls.show_debug = DetectDownStroke(GetButton(input, Key::kPeriod));
+    controls.train_controls.throttle = GetButton(input, Key::kW).down ? 1.0f : 0.0f;
+    controls.train_controls.brake = GetButton(input, Key::kS).down ? 1.0f : 0.0f;
+    controls.train_controls.reverse = DetectDownStroke(GetButton(input, Key::kR));
+  } else if (input->type == Input::Type::kMouse) {
+    if (const auto& left_button = GetButton(input, MouseButton::kLeft); left_button.down) {
+      const float new_x = GetAxisValue(input, MouseAxis::kX);
+      const float new_y = GetAxisValue(input, MouseAxis::kY);
+      if (!left_button.changed) {
+        controls.camera_controls.x = new_x - mouse_last_x_;
+        controls.camera_controls.y = new_y - mouse_last_y_;
+      }
+      mouse_last_x_ = new_x;
+      mouse_last_y_ = new_y;
+    }
+  } else if (input->type == Input::Type::kTouch) {
+    const auto& button = input->buttons[0];
+    float throttle{};
+    float brake{};
+    if (button.changed && button.down) {
+      drag_start_ = input->axes[1].value;
+    } else if (button.down) {
+      const float drag_diff = 0.01f * (drag_start_ - input->axes[1].value);
+      throttle = std::max(0.0f, drag_diff);
+      brake = std::max(0.0f, -drag_diff);
+    }
+    controls.train_controls.throttle = throttle;
+    controls.train_controls.brake = brake;
+  } else if (input->type == Input::Type::kJoystick) {
+    controls.train_controls.throttle = input->axes[2].value;
+  } else {
+    // Unknown input type
+    ABSL_ASSERT(false);
+  }
+
+  return controls;
 }

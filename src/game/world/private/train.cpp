@@ -107,22 +107,25 @@ void Train::Control(const TrainControls& controls, const Units::TimeDelta time) 
   }
 }
 
+World::WorldSpaceCoordinates Train::GetCenterPoint() const {
+  const auto first_bogie = cars_.front().first;
+  const auto last_bogie = cars_.back().second;
+  return rails_.WorldSpace(first_bogie).average(rails_.WorldSpace(last_bogie));
+}
+
 void Train::Draw() const {
   unsigned car_index = 0;
   for (const auto& [fst, snd] : cars_) {
     const auto position_1 = rails_.WorldSpace(fst);
     const auto position_2 = rails_.WorldSpace(snd);
-
+    const auto average_position = position_1.average(position_2);
     const Raylib::Vector3 point_1 = ToRaylibVector3(position_1);
-    const Raylib::Vector3 point_2 = ToRaylibVector3(position_2);
-    const Raylib::Vector3 point_tmp = Vector3Subtract(point_2, point_1);
-
-    // Get midpoint between bogies
-    const Raylib::Vector3 car_origin = Raylib::Vector3Scale(Raylib::Vector3Add(point_1, point_2), 0.5f);
+    const Raylib::Vector3 car_origin = ToRaylibVector3(average_position);
+    const Raylib::Vector3 delta = Vector3Subtract(car_origin, point_1);
 
     // Every second car is reversed, this results in pairs of back to back cars
     const float car_orientation_angle = (car_index % 2) ? 180.0f : 0.0f;
-    const float angle = (atan2f(point_tmp.y, point_tmp.x) * (180.0f / PI)) + car_orientation_angle;
+    const float angle = (atan2f(delta.y, delta.x) * (180.0f / PI)) + car_orientation_angle;
     Raylib::DrawModelEx(model_, car_origin, kModelRotationAxis, angle, kModelScale3D, Raylib::WHITE);
     ++car_index;
   }

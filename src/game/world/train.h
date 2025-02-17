@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -18,6 +17,7 @@ class Train {
   void Control(const Control::TrainControls& controls, Units::TimeDelta time);
   [[nodiscard]] Units::Speed Speed() const { return speed_; }
 
+  World::WorldSpaceCoordinates GetCenterPoint() const;
   void Draw() const;
   void DrawDebug() const;
 

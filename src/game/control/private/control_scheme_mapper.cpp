@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #include "game/control/control_scheme_mapper.h"
 
 #include <absl/base/macros.h>

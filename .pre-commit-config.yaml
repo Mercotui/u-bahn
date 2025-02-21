@@ -43,7 +43,6 @@ repos:
     hooks:
       - id: cpplint
         # Disable the rules:
-        # - copyright header required, clutters the file, see license in repo root
         # - build c++11, I use modern C++ without restricting myself to subsets.
         # - whitespace indent, has a lot of false positives on continuation indents
-        args: [ "--filter=-legal/copyright,-build/c++11,-whitespace/indent_namespace", "--linelength=120" ]
+        args: [ "--filter=-build/c++11,-whitespace/indent_namespace", "--linelength=120" ]

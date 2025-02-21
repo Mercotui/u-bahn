@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+// SPDX-License-Identifier: MIT
 #include "game/input/keyboard_mouse.h"
 
 #include <absl/log/log.h>

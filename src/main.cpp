@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #include <absl/log/globals.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>

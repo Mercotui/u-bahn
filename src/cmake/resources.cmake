@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+# SPDX-License-Identifier: MIT
+
 # This function adds resources for your target, the behaviour depends on the current CMAKE_SYSTEM_NAME.
 function(target_add_resources target_name resource_in resource_out)
     if (CMAKE_SYSTEM_NAME STREQUAL Android)

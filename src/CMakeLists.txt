@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+# SPDX-License-Identifier: MIT
 find_package(raylib 5.0 REQUIRED)
 find_package(absl REQUIRED)
 

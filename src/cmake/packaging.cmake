@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+# SPDX-License-Identifier: MIT
+
 if (CMAKE_SYSTEM_NAME STREQUAL Android)
     message(STATUS "packaging.cmake: not yet implemented")
 elseif (CMAKE_SYSTEM_NAME STREQUAL Emscripten)

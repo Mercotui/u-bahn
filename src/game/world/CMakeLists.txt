@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+# SPDX-License-Identifier: MIT
+
 find_package(GTest REQUIRED)
 find_package(absl REQUIRED COMPONENTS Log)
 find_package(raylib 5.0 REQUIRED)
@@ -16,7 +19,6 @@ target_link_libraries(game_world PRIVATE platform raylib glm::glm absl::log bezi
 target_link_libraries(game_world PUBLIC mp-units::mp-units)
 
 add_executable(world_test
-        private/train_unittest.cpp
         private/rails_unittest.cpp
 )
 target_link_libraries(world_test PRIVATE raylib game_world GTest::gtest GTest::gtest_main)

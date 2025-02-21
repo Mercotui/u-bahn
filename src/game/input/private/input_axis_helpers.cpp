@@ -1,11 +1,14 @@
+// SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+// SPDX-License-Identifier: MIT
+
 #include "game/input/private/input_axis_helpers.h"
 
 #include <absl/log/log.h>
 
 #include <chrono>
 #include <cmath>
-#include <utility>
 #include <string>
+#include <utility>
 
 namespace {
 using std::chrono_literals::operator""s;

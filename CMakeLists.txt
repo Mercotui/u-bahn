@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+# SPDX-License-Identifier: MIT
 cmake_minimum_required(VERSION 3.23)
 
 project(u-bahn VERSION 0.1 LANGUAGES CXX)

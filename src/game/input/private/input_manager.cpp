@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+// SPDX-License-Identifier: MIT
 #include "game/input/private/input_manager.h"
 
 #include <absl/log/log.h>

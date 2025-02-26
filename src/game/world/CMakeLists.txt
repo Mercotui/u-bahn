@@ -13,9 +13,13 @@ add_library(game_world STATIC
         private/rail_segment.cpp
         private/rails.cpp
         private/train.cpp
+        private/world.cpp
 )
 add_library(Game::World ALIAS game_world)
-target_link_libraries(game_world PRIVATE platform raylib glm::glm absl::log bezier::bezier)
+target_link_libraries(game_world PRIVATE
+        raylib glm::glm absl::log bezier::bezier
+        platform
+)
 target_link_libraries(game_world PUBLIC mp-units::mp-units)
 
 add_executable(world_test

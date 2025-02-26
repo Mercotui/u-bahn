@@ -4,7 +4,12 @@
 
 #include <mp-units/systems/si/si.h>
 
+#include <memory>
+
 #include "game/world/units.h"
+
+//! Forward Declared, defined in game/world/rails.h
+class Rails;
 
 namespace World {
 inline constexpr struct origin : mp_units::absolute_point_origin<origin, mp_units::isq::distance> {
@@ -34,4 +39,11 @@ struct WorldSpaceCoordinates {
     return result;
   }
 };
+
+/**
+ * Does nothing for now
+ * @param data unused data
+ * @return empty rails
+ */
+std::unique_ptr<Rails> Load(std::istream* data);
 }  // namespace World

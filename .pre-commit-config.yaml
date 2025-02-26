@@ -44,5 +44,6 @@ repos:
       - id: cpplint
         # Disable the rules:
         # - build c++11, I use modern C++ without restricting myself to subsets.
+        # - build c++17, same as above
         # - whitespace indent, has a lot of false positives on continuation indents
-        args: [ "--filter=-build/c++11,-whitespace/indent_namespace", "--linelength=120" ]
+        args: [ "--filter=-build/c++11,-build/c++17,-whitespace/indent_namespace", "--linelength=120" ]

@@ -3,9 +3,11 @@
 
 #include "game/game.h"
 
+#include <absl/log/log.h>
 #include <mp-units/format.h>
 
 #include <format>
+#include <fstream>
 #include <memory>
 #include <vector>
 
@@ -17,61 +19,17 @@
 #include "game/world/units.h"
 #include "platform/platform.h"
 #include "third_party/raylib/raylib.h"
+#include "utils/file_reader_interface.h"
 #include "utils/version.h"
 
 namespace {
 using Control::TrainControls;
-constexpr auto kRailScale{15 * mp_units::si::metre};
+using FileType = FileReaderInterface::FileType;
+const std::filesystem::path kRailsFile = "resources/test-track.bin";
+constexpr auto kDebugTextFontsize = 20;
 
-enum class UnitCircleQuadrant {
-  kTopRight,
-  kTopLeft,
-  kBottomLeft,
-  kBottomRight,
-};
-std::vector<World::WorldSpaceCoordinates> CircleQuadrantAtOffset(const UnitCircleQuadrant quadrant,
-                                                                 const World::WorldSpaceCoordinates origin) {
-  // construct a clockwise unit-circle
-  World::WorldSpaceCoordinates rail_point_1{.x = origin.x + 1.0 * kRailScale, .y = origin.y + 0.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_1_1{.x = origin.x + 1.0 * kRailScale,
-                                                      .y = origin.y + -0.552284749831 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_1_2{.x = origin.x + 0.552284749831 * kRailScale,
-                                                      .y = origin.y + -1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_point_2{.x = origin.x + 0.0 * kRailScale, .y = origin.y + -1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_2_1{.x = origin.x + -0.552284749831 * kRailScale,
-                                                      .y = origin.y + -1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_2_2{.x = origin.x + -1.0f * kRailScale,
-                                                      .y = origin.y + -0.552284749831 * kRailScale};
-  World::WorldSpaceCoordinates rail_point_3{.x = origin.x + -1.0 * kRailScale, .y = origin.y + 0.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_3_1{.x = origin.x + -1.0f * kRailScale,
-                                                      .y = origin.y + 0.552284749831 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_3_2{.x = origin.x + -0.552284749831 * kRailScale,
-                                                      .y = origin.y + 1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_point_4{.x = origin.x + 0.0 * kRailScale, .y = origin.y + 1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_4_1{.x = origin.x + 0.552284749831 * kRailScale,
-                                                      .y = origin.y + 1.0 * kRailScale};
-  World::WorldSpaceCoordinates rail_control_point_4_2{.x = origin.x + 1.0 * kRailScale,
-                                                      .y = origin.y + 0.552284749831 * kRailScale};
-
-  std::vector<World::WorldSpaceCoordinates> curve_points;
-
-  switch (quadrant) {
-    case UnitCircleQuadrant::kTopRight: {
-      return {rail_point_1, rail_control_point_1_1, rail_control_point_1_2, rail_point_2};
-    }
-    case UnitCircleQuadrant::kTopLeft: {
-      return {rail_point_2, rail_control_point_2_1, rail_control_point_2_2, rail_point_3};
-    }
-    case UnitCircleQuadrant::kBottomLeft: {
-      return {rail_point_3, rail_control_point_3_1, rail_control_point_3_2, rail_point_4};
-    }
-    case UnitCircleQuadrant::kBottomRight: {
-      return {rail_point_4, rail_control_point_4_1, rail_control_point_4_2, rail_point_1};
-    }
-    default: {
-      return {};
-    }
-  }
+void DrawTextRightJustified(const char* text, const int pos_x, const int pos_y, const int fontsize) {
+  Raylib::DrawText(text, pos_x - Raylib::MeasureText(text, fontsize), pos_y, fontsize, Raylib::BLACK);
 }
 }  // namespace
 
@@ -79,44 +37,20 @@ Game::Game()
     : rails_(std::make_unique<Rails>()),
       camera_(CameraFactory::Create()),
       input_(InputManagerFactory::Create(Platform::GetPlatform())),
-      controls_mapper_(std::make_unique<ControlSchemeMapper>()) {
+      controls_mapper_(std::make_unique<ControlSchemeMapper>()),
+      reader_(FileReaderFactory::Create(FileReaderFactory::Type::kWatcher)) {
   Raylib::SetTargetFPS(60);
 
-  constexpr Rails::SegmentId id_1 = {1};
-  constexpr Rails::SegmentId id_2 = {2};
-  constexpr Rails::SegmentId id_3 = {3};
-  constexpr Rails::SegmentId id_4 = {4};
-  constexpr Rails::SegmentId id_5 = {5};
-  constexpr Rails::SegmentId id_6 = {6};
-  constexpr Rails::SegmentId id_7 = {7};
+  reader_->read(kRailsFile, FileType::kBinary, [this](std::ifstream stream) {
+    if (!stream.is_open()) {
+      LOG(ERROR) << "Failed to read rails file " << kRailsFile;
+      return;
+    }
+    LOG(ERROR) << "Reading world data from " << kRailsFile;
+    rails_ = World::Load(&stream);
+  });
 
-  // Circle
-  rails_->AddSegment(id_1, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopRight, {}),
-                     {{id_4}, {id_5, Rails::SegmentEndpoint::kBegin}}, {{id_2, Rails::SegmentEndpoint::kBegin}});
-  rails_->AddSegment(id_2, CircleQuadrantAtOffset(UnitCircleQuadrant::kTopLeft, {}), {{id_1}},
-                     {{id_3, Rails::SegmentEndpoint::kBegin}});
-  rails_->AddSegment(id_3, CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomLeft, {}), {{id_2}},
-                     {{id_4, Rails::SegmentEndpoint::kBegin}});
-  //  rails_->AddSegment(id_4, CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomRight, {}), {{id_3}},
-  //                     {{id_1, Rails::SegmentEndpoint::kBegin}});
-
-  // Turning Loop
-  rails_->AddSegment(id_5,
-                     CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomLeft,
-                                            {World::origin + 2 * kRailScale, World::origin + 0 * kRailScale}),
-                     {{id_1, Rails::SegmentEndpoint::kBegin}}, {{id_7, Rails::SegmentEndpoint::kBegin}});
-  rails_->AddSegment(id_6,
-                     {{World::origin + 0 * kRailScale, World::origin + 1 * kRailScale},
-                      {World::origin + 2 * kRailScale, World::origin + 1 * kRailScale}},
-                     {{id_3}}, {{id_7, Rails::SegmentEndpoint::kBegin}});
-  rails_->AddSegment(id_7,
-                     CircleQuadrantAtOffset(UnitCircleQuadrant::kBottomRight,
-                                            {World::origin + 2 * kRailScale, World::origin + 0 * kRailScale}),
-                     {{id_6}, {id_5}});
-
-  train_ = std::make_unique<Train>(
-      *rails_, Rails::Location{.segment = id_3, .intra_segment_direction = Rails::SegmentTraverseDirection::kBackward},
-      2);
+  train_ = std::make_unique<Train>(*rails_, Rails::Location{.segment = {3}}, 2);
 }
 
 Game::~Game() { Raylib::EnableCursor(); }
@@ -143,16 +77,27 @@ bool Game::Loop() {
   camera_->Deactivate();
 
   if (show_debug_) {
+    // Draw top left status
+    Raylib::DrawFPS(10, 10);
     Raylib::DrawText(std::format("ActiveInput={}", controls.input_name.empty() ? "None" : controls.input_name).c_str(),
-                     10, 10, 20, Raylib::BLACK);
+                     10, 30, kDebugTextFontsize, Raylib::BLACK);
     Raylib::DrawText(
         std::format("Velocity={:.1f} km/h",
                     train_->Speed().numerical_value_in(mp_units::si::kilo<mp_units::si::metre> / mp_units::si::hour))
             .c_str(),
-        10, 30, 20, Raylib::BLACK);
+        10, 50, kDebugTextFontsize, Raylib::BLACK);
 
-    Raylib::DrawText(std::format("Version {}", Utils::GetVersion()).c_str(), 10, Raylib::GetScreenHeight() - 30, 20,
+    // Draw bottom left version
+    const auto bottom_align_pos = Raylib::GetScreenHeight() - 30;
+    Raylib::DrawText(std::format("Version {}", Utils::GetVersion()).c_str(), 10, bottom_align_pos, kDebugTextFontsize,
                      Raylib::BLACK);
+
+    // Draw bottom right controls
+    const auto right_align_pos = Raylib::GetScreenWidth() - 10;
+    DrawTextRightJustified("Accelerate:W", right_align_pos, bottom_align_pos - 60, kDebugTextFontsize);
+    DrawTextRightJustified("Decelerate:S", right_align_pos, bottom_align_pos - 40, kDebugTextFontsize);
+    DrawTextRightJustified("Reverse:R", right_align_pos, bottom_align_pos - 20, kDebugTextFontsize);
+    DrawTextRightJustified("Toggle debug view:.", right_align_pos, bottom_align_pos, kDebugTextFontsize);
   }
   Raylib::EndDrawing();
 

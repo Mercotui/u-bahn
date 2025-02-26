@@ -54,9 +54,11 @@ add_subdirectory(game/control)
 add_subdirectory(game/world)
 add_subdirectory(game/camera)
 
-target_link_libraries(u-bahn PRIVATE raylib
-        abseil::abseil
-        Version::Version platform Game::Input Game::Control Game::World Game::Camera)
+target_link_libraries(u-bahn PRIVATE
+        raylib abseil::abseil
+        platform Utils::Version Utils::FileReader
+        Game::Input Game::Control Game::World Game::Camera
+)
 target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)
 
 include(cmake/packaging.cmake)

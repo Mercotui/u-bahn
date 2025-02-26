@@ -228,19 +228,6 @@ TEST(RailsTest, WorldSpace) {
   };
 
   for (const auto& data : test_data_line) {
-    Rails::Location location{.segment = {.id = 1}, .intra_segment_location = data.intra_segment_location};
-    const auto point = rails.WorldSpace(location);
-    ExpectNear(point, data.world_point);
-  }
-
-  // Approximate a unit-circle
-  constexpr std::array test_data_circle = {
-      Data{-2.0 * metre, {.x = origin + 0.0 * metre}},  Data{0.0 * metre, {.x = origin + 0.0 * metre}},
-      Data{2.0 * metre, {.x = origin + 2.0 * metre}},   Data{5.0 * metre, {.x = origin + 5.0 * metre}},
-      Data{10.0 * metre, {.x = origin + 10.0 * metre}}, Data{15.0 * metre, {.x = origin + 10.0 * metre}},
-  };
-
-  for (const auto& data : test_data_circle) {
     ScopedTrace trace(data.src_loc.file_name(), static_cast<int>(data.src_loc.line()), "Expectation declared here");
 
     Rails::Location location{.segment = {.id = 1}, .intra_segment_location = data.intra_segment_location};

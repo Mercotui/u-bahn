@@ -14,6 +14,8 @@ class ControlSchemeMapper;
 class Rails;
 //! Forward Declared, defined in game/world/train.h
 class Train;
+//! Forward Declared, defined in game/reader/reader_interface.h
+class FileReaderInterface;
 
 class Game {
  public:
@@ -24,11 +26,12 @@ class Game {
 
  private:
   bool running_{true};
-  bool show_debug_{false};
+  bool show_debug_{true};
   std::unique_ptr<Rails> rails_;
   std::unique_ptr<Train> train_;
 
   std::unique_ptr<CameraInterface> camera_;
   std::unique_ptr<InputManagerInterface> input_;
   std::unique_ptr<ControlSchemeMapper> controls_mapper_;
+  std::unique_ptr<FileReaderInterface> reader_;
 };

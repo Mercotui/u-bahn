@@ -16,7 +16,7 @@ class UBahnRecipe(ConanFile):
         self.requires("glm/cci.20230113")
         self.requires("bezier/0.2.1")
         self.requires("mp-units/2.1.1")
-        # self.requires("nlohmann_json/3.11.3")
+        self.requires("watcher/0.12.0")
 
     def layout(self):
         cmake_layout(self)

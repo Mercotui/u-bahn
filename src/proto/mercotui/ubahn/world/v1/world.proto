@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package mercotui.ubahn.world.v1;
+
+// A point in 3D space
+message Point {
+  // The point's X coordinate
+  double x = 1;
+  // The point's Z coordinate
+  double y = 2;
+  // The point's Y coordinate
+  double z = 3;
+}
+
+// A rail segment identifier
+message SegmentId {
+  // The identifier value
+  uint64 value = 1;
+}
+
+// A point in a segment at which a connection happens
+enum ConnectionPoint {
+  // Unknown default value
+  CONNECTION_POINT_UNSPECIFIED = 0;
+  // Connect at the begin point of the segment
+  CONNECTION_POINT_BEGIN = 1;
+  // Connect at the end point of the segment
+  CONNECTION_POINT_END = 2;
+}
+
+// Describe a connection to another rail segment
+message Connection {
+  // The other segment's ID
+  SegmentId id = 1;
+  // The point in the other segment to which we connect
+  ConnectionPoint connection_point = 2;
+}
+
+// A rail segment
+message Segment {
+  // The ID for this rail segment
+  SegmentId id = 1;
+  // The curve points for this segment. The first and last points are connection points.
+  // The (optional) intermediate points are bezier control handles.
+  repeated Point points = 2;
+  // The connections at the beginning of this segment
+  repeated Connection connections_at_begin_point = 3;
+  // The connections at the end of this segment
+  repeated Connection connections_at_end_point = 4;
+}
+
+// A system of rails
+message Rails {
+  // A list of rail segments
+  repeated Segment segments = 1;
+}
+
+// A world section
+message Section {
+  // The file path of the 3D model for this section
+  string model = 1;
+  // The rails in this section
+  Rails rails = 2;
+}

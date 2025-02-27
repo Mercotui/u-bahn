@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <mp-units/systems/si/si.h>
+#include <mp-units/systems/isq/isq.h>
 
 #include <memory>
 
@@ -41,9 +41,9 @@ struct WorldSpaceCoordinates {
 };
 
 /**
- * Does nothing for now
- * @param data unused data
- * @return empty rails
+ * Load the world from a stream containing binary protobuf data
+ * @param data The binary protobuf Section message data
+ * @return the parsed rails structure if the message was valid, otherwise nullptr
  */
 std::unique_ptr<Rails> Load(std::istream* data);
 }  // namespace World

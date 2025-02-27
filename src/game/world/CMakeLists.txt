@@ -18,15 +18,18 @@ add_library(game_world STATIC
 add_library(Game::World ALIAS game_world)
 target_link_libraries(game_world PRIVATE
         raylib glm::glm absl::log bezier::bezier
-        platform
+        Platform::Platform Buffers::World
 )
 target_link_libraries(game_world PUBLIC mp-units::mp-units)
 
 add_executable(world_test
         private/rails_unittest.cpp
+        private/world_unittest.cpp
 )
 target_link_libraries(world_test PRIVATE raylib game_world GTest::gtest GTest::gtest_main)
 add_test(NAME world_test COMMAND world_test)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/private/world_unitest_test_track.bin"
+        "${CMAKE_CURRENT_BINARY_DIR}/world_unitest_test_track.bin" COPYONLY)
 
 add_executable(world_benchmark
         private/rails_benchmark.cpp)

@@ -24,7 +24,10 @@ add_library(game_input STATIC
         private/keyboard_mouse.cpp
 )
 add_library(Game::Input ALIAS game_input)
-target_link_libraries(game_input PRIVATE absl::log raylib $<TARGET_NAME_IF_EXISTS:game_input_joystick> platform)
+target_link_libraries(game_input PRIVATE
+        absl::log raylib
+        $<TARGET_NAME_IF_EXISTS:game_input_joystick> Platform::Platform
+)
 
 add_executable(input_test
         private/input_manager_unittest.cpp
@@ -32,6 +35,8 @@ add_executable(input_test
         private/raylib_input_handlers_unittest.cpp
         private/input_axis_helpers_unittest.cpp
 )
-target_link_libraries(input_test PRIVATE game_input $<TARGET_NAME_IF_EXISTS:game_input_joystick>
-        platform GTest::gtest GTest::gtest_main)
+target_link_libraries(input_test PRIVATE
+        GTest::gtest GTest::gtest_main
+        game_input $<TARGET_NAME_IF_EXISTS:game_input_joystick> Platform::Platform
+)
 add_test(NAME input_test COMMAND input_test)

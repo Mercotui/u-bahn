@@ -48,6 +48,7 @@ else ()
 endif ()
 
 add_subdirectory(utils)
+add_subdirectory(proto)
 add_subdirectory(platform)
 add_subdirectory(game/input)
 add_subdirectory(game/control)
@@ -56,7 +57,7 @@ add_subdirectory(game/camera)
 
 target_link_libraries(u-bahn PRIVATE
         raylib abseil::abseil
-        platform Utils::Version Utils::FileReader
+        Platform::Platform Utils::Version Utils::FileReader
         Game::Input Game::Control Game::World Game::Camera
 )
 target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)

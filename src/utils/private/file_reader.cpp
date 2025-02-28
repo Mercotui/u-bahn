@@ -10,6 +10,8 @@
 #include <vector>
 #include <wtr/watcher.hpp>
 
+#include "platform/platform.h"
+
 namespace {
 void OpenFile(const std::filesystem::path& file_path, const FileReaderInterface::FileType type,
               const FileReaderInterface::ReadCb& cb) {
@@ -19,6 +21,11 @@ void OpenFile(const std::filesystem::path& file_path, const FileReaderInterface:
 }  // namespace
 
 std::unique_ptr<FileReaderInterface> FileReaderFactory::Create(const Type type) {
+  // Platforms other than Desktop always use simple reader
+  if (Platform::GetPlatform() != Platform::Type::kDesktop) {
+    return std::make_unique<FileReader>();
+  }
+
   switch (type) {
     case Type::kWatcher: {
       return std::make_unique<WatcherFileReader>();

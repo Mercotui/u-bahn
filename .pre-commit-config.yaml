@@ -22,6 +22,12 @@ repos:
         # Disable rule C0307: indentation width, because it does not match the default CLion indentation.
         args: [ --line-width=120, --disabled-codes=C0307 ]
 
+  - repo: https://github.com/bufbuild/buf
+    rev: b2393b4dd155690d51b284bc7504808b32e2998d
+    hooks:
+      - id: buf-lint
+        args: [ "--config=src/proto/buf.yml" ]
+
   - repo: https://github.com/PyCQA/flake8
     rev: 88a4f9b2f48fc44b025a48fa6a8ac7cc89ef70e0
     hooks:

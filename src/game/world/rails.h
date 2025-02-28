@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <array>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <unordered_map>
@@ -20,13 +20,13 @@ class Rails {
    * strong typed ID that specifies a RailSegment
    */
   struct SegmentId {
-    unsigned id{};
+    uint64_t id{};
 
     explicit operator bool() const { return id != 0; }
     [[nodiscard]] bool operator==(const SegmentId& other) const { return id == other.id; }
     [[nodiscard]] bool operator<(const SegmentId& other) const { return id < other.id; }
     struct Hasher {
-      std::size_t operator()(const SegmentId& instance) const { return std::hash<unsigned>()(instance.id); }
+      std::size_t operator()(const SegmentId& instance) const { return std::hash<uint64_t>()(instance.id); }
     };
   };
 
@@ -84,8 +84,8 @@ class Rails {
    * Incoming and outgoing switches will default to the first incoming and outgoing segment respectively.
    * @param id the unique ID of this rail segment
    * @param curve_points the curve of the RailSegment we want to build
-   * @param incoming_segments the segments that lead into this segment, between 0 and 2 elements allowed
-   * @param outgoing_segments the segments that lead out from this segment, between 0 and 2 elements allowed
+   * @param begin_connections the segments that lead into this segment, between 0 and 2 elements allowed
+   * @param end_connections the segments that lead out from this segment, between 0 and 2 elements allowed
    */
   void AddSegment(SegmentId id, const std::vector<World::WorldSpaceCoordinates>& curve_points,
                   std::vector<SegmentEndpointId> begin_connections = {},

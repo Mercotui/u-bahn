@@ -15,5 +15,5 @@ run dnf update -y && \
 # Append pipx install dir to path
 env PATH="$PATH:/root/.local/bin"
 
-# Install conan
-run pipx install conan
+# Install conan and poetry
+run pipx install conan poetry

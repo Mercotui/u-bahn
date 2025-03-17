@@ -26,13 +26,14 @@ repos:
     rev: b2393b4dd155690d51b284bc7504808b32e2998d
     hooks:
       - id: buf-lint
-        args: [ "--config=src/proto/buf.yml" ]
+        args: [ "--config=proto/buf.yml" ]
 
   - repo: https://github.com/PyCQA/flake8
     rev: 88a4f9b2f48fc44b025a48fa6a8ac7cc89ef70e0
     hooks:
       - id: flake8
-        args: [ --max-line-length=120 ]
+        # We need to ignore some errors in the blender addon, Flake8 gets confused about the bpy import
+        args: [ "--max-line-length=120", "--per-file-ignores=tools/blender_exporter_addon/src/__init__.py:F722,F821" ]
 
   - repo: https://github.com/PyCQA/isort
     rev: c655831799765e9593989ee12faba13b6ca391a5
@@ -49,7 +50,7 @@ repos:
     hooks:
       - id: cpplint
         # Disable the rules:
-        # - build c++11, I use modern C++ without restricting myself to subsets.
-        # - build c++17, same as above
-        # - whitespace indent, has a lot of false positives on continuation indents
+        # - build/c++11, I use modern C++ without restricting myself to subsets.
+        # - build/c++17, same as above
+        # - whitespace/indent_namespace, has a lot of false positives on continuation indents
         args: [ "--filter=-build/c++11,-build/c++17,-whitespace/indent_namespace", "--linelength=120" ]

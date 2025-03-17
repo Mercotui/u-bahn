@@ -1,0 +1,23 @@
+#  SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+#  SPDX-License-Identifier: MIT
+schema_version = "1.0.0"
+
+id = "ubahn_exporter_blender_addon"
+version = "0.1.0"
+name = "U-Bahn Blender Exporter Addon"
+tagline = "Exports binary protobuf files containing an U-Bahn World"
+maintainer = "Menno van der Graaf mennovandergraaf@hotmail.com"
+type = "add-on"
+website = "https://github.com/Mercotui/u-bahn"
+tags = ["Import-Export", "Game Engine"]
+blender_version_min = "4.2.0"
+license = ["SPDX:MIT"]
+copyright = ["2025 Menno van der Graaf <mennovandergraaf@hotmail.com>"]
+# TODO(Menno 23.03.2025) This should be expanded to inlcude "windows-x64", "macos-arm64" if I get the packaging working
+platforms = ["linux-x64"]
+wheels = [
+    "./wheels/protobuf-5.29.3-cp38-abi3-manylinux2014_x86_64.whl",
+]
+
+[permissions]
+files = "Export U-Bahn World protobuf to disk"

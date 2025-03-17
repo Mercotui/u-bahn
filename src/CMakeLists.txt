@@ -48,7 +48,6 @@ else ()
 endif ()
 
 add_subdirectory(utils)
-add_subdirectory(proto)
 add_subdirectory(platform)
 add_subdirectory(game/input)
 add_subdirectory(game/control)

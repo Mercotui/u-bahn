@@ -23,8 +23,7 @@ class Rails {
     uint64_t id{};
 
     explicit operator bool() const { return id != 0; }
-    [[nodiscard]] bool operator==(const SegmentId& other) const { return id == other.id; }
-    [[nodiscard]] bool operator<(const SegmentId& other) const { return id < other.id; }
+    [[nodiscard]] auto operator<=>(const SegmentId& other) const = default;
     struct Hasher {
       std::size_t operator()(const SegmentId& instance) const { return std::hash<uint64_t>()(instance.id); }
     };
@@ -46,19 +45,7 @@ class Rails {
     SegmentEndpoint end_point{SegmentEndpoint::kEnd};
 
     explicit operator bool() const { return id.operator bool(); }
-
-    [[nodiscard]] bool operator==(const SegmentEndpointId& other) const {
-      return id == other.id && end_point == other.end_point;
-    }
-
-    [[nodiscard]] bool operator<(const SegmentEndpointId& other) const {
-      if (id < other.id) {
-        return true;
-      } else if (id == other.id) {
-        return end_point < other.end_point;
-      }
-      return false;
-    }
+    [[nodiscard]] auto operator<=>(const SegmentEndpointId& other) const = default;
   };
 
   /**
@@ -69,9 +56,7 @@ class Rails {
     Units::Distance intra_segment_location{};
     SegmentTraverseDirection intra_segment_direction{SegmentTraverseDirection::kForward};
 
-    [[nodiscard]] bool operator==(const Location& other) const {
-      return segment == other.segment && intra_segment_location == other.intra_segment_location;
-    }
+    [[nodiscard]] auto operator<=>(const Location& other) const = default;
   };
 
   //! Constructor

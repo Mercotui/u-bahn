@@ -22,9 +22,7 @@ struct WorldSpaceCoordinates {
   Coordinate y{};
   Coordinate z{};
 
-  [[nodiscard]] bool operator==(const WorldSpaceCoordinates& other) const {
-    return x == other.x && y == other.y && z == other.z;
-  }
+  [[nodiscard]] auto operator<=>(const WorldSpaceCoordinates& other) const = default;
 
   /**
    * Calculate the average between this and other

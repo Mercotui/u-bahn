@@ -1,60 +1,13 @@
 #  SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
 #  SPDX-License-Identifier: MIT
+from itertools import pairwise
+
 import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Operator
 from bpy_extras.io_utils import ExportHelper
 
-# According to the internet lore, relative imports should work?
-# https://blender.stackexchange.com/a/202672
-from . import world_pb2
-
-
-def write_some_data(context, filepath, use_some_setting):
-    point1 = world_pb2.Point()
-    point1.x = 20
-    point1.y = 0
-    point2 = world_pb2.Point()
-    point2.x = 0
-    point2.y = 0
-    point3 = world_pb2.Point()
-    point3.x = 0
-    point3.y = 20
-    point4 = world_pb2.Point()
-    point4.x = 20
-    point4.y = 20
-
-    section = world_pb2.Section()
-
-    segment1 = section.rails.segments.add()
-    segment1.id.value = 1
-    segment1.points.append(point1)
-    segment1.points.append(point2)
-    segment1.connections_at_begin_point.add().id.value = 4
-
-    segment2 = section.rails.segments.add()
-    segment2.id.value = 2
-    segment2.points.append(point2)
-    segment2.points.append(point3)
-    segment2.connections_at_begin_point.add().id.value = 1
-
-    segment3 = section.rails.segments.add()
-    segment3.id.value = 3
-    segment3.points.append(point3)
-    segment3.points.append(point4)
-    segment3.connections_at_begin_point.add().id.value = 2
-
-    segment4 = section.rails.segments.add()
-    segment4.id.value = 4
-    segment4.points.append(point4)
-    segment4.points.append(point1)
-    segment4.connections_at_begin_point.add().id.value = 3
-
-    print("running write_some_data...")
-    f = open(filepath, "wb")
-    f.write(section.SerializeToString())
-    f.close()
-    return {"FINISHED"}
+from . import export_rails
 
 
 class ExportUBahnSection(Operator, ExportHelper):
@@ -88,7 +41,50 @@ class ExportUBahnSection(Operator, ExportHelper):
     )
 
     def execute(self, context):
-        return write_some_data(context, self.filepath, self.use_setting)
+        curves = []
+        for obj in bpy.data.objects:
+            if obj.name == "ubahn-rails":
+                if obj.type != "CURVE":
+                    self.report(
+                        {"ERROR"},
+                        "ubahn-rails object is not a curve, instead type: {}".format(
+                            obj.type
+                        ),
+                    )
+                    continue
+
+                for spline in obj.data.splines:
+                    if spline.type != "BEZIER":
+                        self.report(
+                            {"ERROR"},
+                            "ubahn-rails spline is not a bezier curve, instead: {}".format(
+                                obj.type
+                            ),
+                        )
+                        continue
+
+                    # Iterate over each pair of control points
+                    for a, b in pairwise(spline.bezier_points):
+                        # Get the control points of the cubic Bézier curve
+                        points = [a.co, a.handle_right, b.handle_left, b.co]
+
+                        # Store the Bézier curve as a generic array of arrays of coordinates
+                        curves.append([[point.x, point.y, point.z] for point in points])
+
+                    # Check if we need to complete the loop of this spline
+                    if spline.use_cyclic_u:
+                        # Get the last and first control points of the cubic Bézier curve
+                        a = spline.bezier_points[-1]
+                        b = spline.bezier_points[0]
+                        points = [a.co, a.handle_right, b.handle_left, b.co]
+                        curves.append([[point.x, point.y, point.z] for point in points])
+
+        section = export_rails.convert(curves)
+
+        f = open(self.filepath, "wb")
+        f.write(export_rails.serialize(section))
+        f.close()
+        return {"FINISHED"}
 
 
 def menu_func_export(self, context):
@@ -103,10 +99,3 @@ def register():
 def unregister():
     bpy.utils.unregister_class(ExportUBahnSection)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
-
-
-if __name__ == "__main__":
-    register()
-
-    # test call
-    bpy.ops.exportubahn.export("INVOKE_DEFAULT")

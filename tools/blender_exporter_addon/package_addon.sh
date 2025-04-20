@@ -20,6 +20,11 @@ set -e
 poetry export -o dist/requirements.txt
 poetry run pip download -r dist/requirements.txt -d dist/addon/wheels
 
+# Copy the sources of the addon
+cp -r ubahn_exporter_blender_addon/* dist/addon
+# Remove any __pycache__ copy
+rm -r dist/addon/__pycache__
+# Replace the placeholder "init" with the real addon code
+mv dist/addon/addon__init__.py dist/addon/__init__.py
 # Package the entire addon including metadata and dependencies
-cp src/* dist/addon
 flatpak run org.blender.Blender --command extension build --split-platforms --source-dir ./dist/addon --output-dir dist

@@ -33,7 +33,7 @@ repos:
     hooks:
       - id: flake8
         # We need to ignore some errors in the blender addon, Flake8 gets confused about the bpy import
-        args: [ "--max-line-length=120", "--per-file-ignores=tools/blender_exporter_addon/src/__init__.py:F722,F821" ]
+        args: [ "--max-line-length=120", "--per-file-ignores=tools/blender_exporter_addon/ubahn_exporter_blender_addon/addon__init__.py:F722,F821" ]
 
   - repo: https://github.com/PyCQA/isort
     rev: c655831799765e9593989ee12faba13b6ca391a5

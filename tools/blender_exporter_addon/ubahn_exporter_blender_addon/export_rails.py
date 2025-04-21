@@ -1,17 +1,55 @@
 #  SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
 #  SPDX-License-Identifier: MIT
 from itertools import combinations, product
+from math import isclose
+
+from numpy import array
+from numpy.linalg import norm
 
 from . import world_pb2
+
+type Point = list[float]
+type Vector = list[Point]
 
 
 def serialize(section):
     return section.SerializeToString()
 
 
-def detect_connection(a, b):
-    # TODO(Menno 20.04.2025) Detect connection with a bit more leeway, and check the angle between the vectors
-    return a[0][0] == b[0][0] and a[0][1] == b[0][1] and a[0][2] == b[0][2]
+def approximately_equal(a: Point, b: Point):
+    """
+    Check if the first control points are approximately the same vertex, with a 30 centimeter radius as tolerance.
+    :param a: point a
+    :param b: point b
+    :return: true if point a and b are within 30 centimeters of each-other, otherwise false
+    """
+    tol = 0.3  # mega toll
+    return (
+        isclose(a[0], b[0], abs_tol=tol)
+        and isclose(a[1], b[1], abs_tol=tol)
+        and isclose(a[2], b[2], abs_tol=tol)
+    )
+
+
+def are_antiparallel(a: Vector, b: Vector):
+    """
+    Check if the given two vectors are antiparallel, i.e. they point into each-other, with a tolerance of 40
+    :param a: vector a
+    :param b: vector b
+    :return: true if the two vectors are antiparallel within a tolerance, otherwise false
+    """
+    # Use numpy arrays to get the dot product
+    array_a = array(a[0]) - array(a[1])
+    array_b = array(b[0]) - array(b[1])
+    cos_theta = (array_a @ array_b) / (norm(array_a) * norm(array_b))
+
+    # A cos theta between -1 and -0.7 should correspond to antiparallel vectors,
+    # with a tolerance of about 45 degrees to either side.
+    return cos_theta < -0.7
+
+
+def detect_connection(a: Vector, b: Vector):
+    return approximately_equal(a[0], b[0]) and are_antiparallel(a, b)
 
 
 def detect_connections(indexed_curves):

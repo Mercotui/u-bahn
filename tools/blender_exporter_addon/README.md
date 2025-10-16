@@ -26,3 +26,8 @@ the [CLI](https://docs.blender.org/manual/en/4.4/advanced/command_line/extension
 ```bash
 ./package_addon.sh && flatpak run org.blender.Blender --command extension install-file --repo user_default --enable dist/ubahn_exporter_blender_addon-0.1.0-linux_x64.zip
 ```
+
+## Updating dependencies
+
+When adding dependencies or updating their versions,
+be sure to update the corresponding wheels section in the `blender_manifest.toml`.

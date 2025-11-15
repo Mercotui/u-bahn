@@ -21,8 +21,8 @@ To build this project for desktop use:
 
 ```bash
 # install dependencies
-conan install -u -pr:b=default -pr:h=default --build=missing --settings=build_type=Debug .
-conan install -u -pr:b=default -pr:h=default --build=missing --settings=build_type=Release .
+conan install -u -pr:a=profiles/linux-wayland.profile --build=missing --settings=build_type=Debug .
+conan install -u -pr:a=profiles/linux-wayland.profile --build=missing --settings=build_type=Release .
 
 # configure cmake
 cmake --preset conan-default
@@ -37,9 +37,9 @@ cmake --build --preset conan-release
 To build for web:
 
 ```bash
-conan install -u -pr:b=default -pr:h=profiles/emscripten.profile --build=missing  --settings=build_type=Release .
-cmake --preset conan-default
-cmake --build --preset conan-release
+conan install -u -pr:b=profiles/linux-wayland.profile -pr:h=profiles/emscripten.profile --build=missing  --settings=build_type=Release .
+cmake --preset conan-emscripten-release
+cmake --build --preset conan-emscripten-release
 ```
 
 To run the build in your browser use any webserver, I prefer to use caddy:

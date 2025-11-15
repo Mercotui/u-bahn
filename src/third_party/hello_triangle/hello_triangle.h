@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-namespace Raylib {
-#include <raymath.h>
-}  // namespace Raylib
+namespace HelloTriangle {
+int Init();
+void Shutdown();
+
+void Draw();
+}  // namespace HelloTriangle

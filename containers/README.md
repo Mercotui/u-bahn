@@ -3,6 +3,7 @@
 To build and publish the CI container for this project run the following commands:
 
 ```bash
+podman login ghcr.io
 podman build -f build.containerfile -t ghcr.io/mercotui/ubahn_buildenv:1.x
 podman push ghcr.io/mercotui/ubahn_buildenv:1.x
 ```

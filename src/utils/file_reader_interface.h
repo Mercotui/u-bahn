@@ -7,7 +7,7 @@
 #include <memory>
 
 /**
- * An abstract class that handles loading of json files
+ * An abstract class that handles loading of files
  */
 class FileReaderInterface {
  public:

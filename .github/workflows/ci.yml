@@ -5,7 +5,7 @@ on:
     branches: [ 'main' ]
     tags: [ '*' ]
   pull_request:
-    branches: [ 'main' ]
+    branches: [ 'main', 'feat/sdl' ]
 
 env:
   # Determine app version, can be tag, MR and build numbers, or git commit hash
@@ -28,14 +28,14 @@ jobs:
     needs: [ pre-commit ]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mercotui/ubahn_buildenv:1.0
+      image: ghcr.io/mercotui/ubahn_buildenv:1.6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Conan setup
         run: conan profile detect
       - name: Conan install
-        run: conan install -u -pr=profiles/linux-wayland.profile --settings=build_type=Debug --build=missing .
+        run: conan install -u -pr:a=profiles/linux-wayland.profile --settings=build_type=Debug --build=missing .
       - name: Cmake configure
         run: cmake --preset conan-linux-debug -DUBAHN_VERSION=${{ env.VERSION }}
       - name: Build
@@ -47,14 +47,14 @@ jobs:
     needs: [ pre-commit ]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mercotui/ubahn_buildenv:1.0
+      image: ghcr.io/mercotui/ubahn_buildenv:1.6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Conan setup
         run: conan profile detect
       - name: Conan install
-        run: conan install -u -pr:b=default -pr:h=profiles/emscripten.profile --build=missing --settings=build_type=Release .
+        run: conan install -u -pr:b=profiles/linux-wayland.profile -pr:h=profiles/emscripten.profile --build=missing --settings=build_type=Release .
       - name: Cmake configure
         run: cmake --preset conan-emscripten-release -DUBAHN_VERSION=${{ env.VERSION }}
       - name: Build

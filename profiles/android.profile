@@ -16,3 +16,4 @@ android-ndk/r27
 [conf]
 # This line will make sure that the cmake_layout creates a separate build folder for our emscripten target
 tools.cmake.cmake_layout:build_folder_vars=['settings.os']
+tools.cmake.cmaketoolchain:generator=Ninja

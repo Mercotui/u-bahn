@@ -13,10 +13,10 @@ class UBahnRecipe(ConanFile):
         self.requires("benchmark/1.9.1")
         self.requires("abseil/20240116.2")
         self.requires("protobuf/5.27.0")
-        self.requires("raylib/5.5")
+        self.requires("sdl/[>=3.2.20]")
         self.requires("glm/cci.20230113")
         self.requires("bezier/0.2.1")
-        self.requires("mp-units/2.1.1")
+        self.requires("mp-units/2.4.0")
         self.requires("watcher/0.12.0")
 
     def build_requirements(self):

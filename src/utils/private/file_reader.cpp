@@ -40,12 +40,12 @@ std::unique_ptr<FileReaderInterface> FileReaderFactory::Create(const Type type) 
   }
 }
 
-void FileReader::read(const std::filesystem::path& file, const FileType type, const ReadCb cb) {
+void FileReader::Read(const std::filesystem::path& file, const FileType type, const ReadCb cb) {
   const auto file_absolute = std::filesystem::absolute(file);
   OpenFile(file_absolute, type, cb);
 }
 
-void WatcherFileReader::read(const std::filesystem::path& file, const FileType type, ReadCb cb) {
+void WatcherFileReader::Read(const std::filesystem::path& file, const FileType type, ReadCb cb) {
   const auto file_absolute = std::filesystem::absolute(file);
 
   auto event_cb = [file_absolute, type, cb](const wtr::event& event) {

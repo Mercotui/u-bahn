@@ -19,7 +19,7 @@ class FileReader final : public FileReaderInterface {
    * @param type The file type, determines open mode
    * @param cb The callback that will handle the file content
    */
-  void read(const std::filesystem::path& file, FileType type, ReadCb cb) override;
+  void Read(const std::filesystem::path& file, FileType type, ReadCb cb) override;
 };
 
 class WatcherFileReader final : public FileReaderInterface {
@@ -30,7 +30,7 @@ class WatcherFileReader final : public FileReaderInterface {
    * @param type The file type, determines open mode
    * @param cb The callback to call each time the file was read
    */
-  void read(const std::filesystem::path& file, FileType type, ReadCb cb) override;
+  void Read(const std::filesystem::path& file, FileType type, ReadCb cb) override;
 
  private:
   std::vector<std::unique_ptr<wtr::watch>> watchers_;

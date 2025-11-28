@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "game/camera/camera_interface.h"
+#include "game/rendering/camera_interface.h"
 #include "game/world/units.h"
 
 class Camera final : public CameraInterface {

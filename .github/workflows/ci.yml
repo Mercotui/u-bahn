@@ -28,12 +28,14 @@ jobs:
     needs: [ pre-commit ]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mercotui/ubahn_buildenv:1.6
+      image: ghcr.io/mercotui/ubahn_buildenv:2025.11.9
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Conan setup
-        run: conan profile detect
+      - name: Setup conan
+        uses: conan-io/setup-conan@v1
+        with:
+          cache_packages: true
       - name: Conan install
         run: conan install -u -pr:a=profiles/linux-wayland.profile --settings=build_type=Debug --build=missing .
       - name: Cmake configure
@@ -47,12 +49,14 @@ jobs:
     needs: [ pre-commit ]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mercotui/ubahn_buildenv:1.6
+      image: ghcr.io/mercotui/ubahn_buildenv:2025.11.9
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Conan setup
-        run: conan profile detect
+      - name: Setup conan
+        uses: conan-io/setup-conan@v1
+        with:
+          cache_packages: true
       - name: Conan install
         run: conan install -u -pr:b=profiles/linux-wayland.profile -pr:h=profiles/emscripten.profile --build=missing --settings=build_type=Release .
       - name: Cmake configure

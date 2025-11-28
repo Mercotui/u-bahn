@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
 // SPDX-License-Identifier: MIT
 
-#include "game/camera/private/camera.h"
+#include "game/rendering/private/camera.h"
 
 #include <mp-units/framework.h>
 #include <mp-units/math.h>

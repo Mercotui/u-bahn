@@ -11,9 +11,9 @@
 #include <memory>
 #include <vector>
 
-#include "camera/camera_interface.h"
 #include "game/control/control_scheme_mapper.h"
 #include "game/input/input_manager_interface.h"
+#include "game/rendering/camera_interface.h"
 #include "game/world/units.h"
 #include "platform/platform.h"
 #include "third_party/hello_triangle/hello_triangle.h"
@@ -33,7 +33,7 @@ Game::Game()
       // input_(InputManagerFactory::Create(Platform::GetPlatform())),
       controls_mapper_(std::make_unique<ControlSchemeMapper>()),
       reader_(FileReaderFactory::Create(FileReaderFactory::Type::kWatcher)) {
-  reader_->read(kRailsFile, FileType::kBinary, [this](std::ifstream stream) {
+  reader_->Read(kRailsFile, FileType::kBinary, [this](std::ifstream stream) {
     if (!stream.is_open()) {
       LOG(ERROR) << "Failed to read rails file " << kRailsFile;
       return;

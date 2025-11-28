@@ -32,7 +32,7 @@ class FileReaderInterface {
    * @param type The file type, determines open mode
    * @param cb The callback that will handle the file content
    */
-  virtual void read(const std::filesystem::path& file, FileType type, ReadCb cb) = 0;
+  virtual void Read(const std::filesystem::path& file, FileType type, ReadCb cb) = 0;
 };
 
 namespace FileReaderFactory {

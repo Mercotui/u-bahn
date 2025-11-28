@@ -13,12 +13,12 @@ from quay.io/fedora/fedora-minimal:43
 
 # Install build tools followed by app dependencies
 run dnf update -y && \
-    dnf install -y clang ninja-build cmake pipx git \
+    dnf install -y clang ninja-build cmake pip pipx tar git \
         systemd-devel mesa-libGLES-devel mesa-libEGL-devel SDL3-devel && \
     dnf clean all
 
 # Append pipx install dir to path
 env PATH="$PATH:/root/.local/bin"
 
-# Install conan and poetry
-run pipx install conan poetry
+# Install poetry
+run pipx install poetry

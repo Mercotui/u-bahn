@@ -24,42 +24,51 @@ jobs:
       - uses: actions/setup-python@v3
       - uses: pre-commit/action@v3.0.1
 
-  build:
+  build-linux:
     needs: [ pre-commit ]
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mercotui/ubahn_buildenv:2025.11.9
+      image: ghcr.io/mercotui/ubahn_buildenv:1.6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup conan
-        uses: conan-io/setup-conan@v1
-        with:
-          cache_packages: true
-      - name: Linux - Conan install
+      - name: Conan setup
+        run: conan profile detect
+      - name: Conan install
         run: conan install -u -pr:a=profiles/linux-wayland.profile --settings=build_type=Debug --build=missing .
-      - name: Linux -  Cmake configure
+      - name: Cmake configure
         run: cmake --preset conan-linux-debug -DUBAHN_VERSION=${{ env.VERSION }}
-      - name: Linux - Build
+      - name: Build
         run: cmake --build --preset conan-linux-debug
-      - name: Linux - Test
+      - name: Test
         run: ctest --preset conan-linux-debug  --output-on-failure
-      - name: Web - Conan install
+
+  build-web:
+    needs: [ pre-commit ]
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mercotui/ubahn_buildenv:1.6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Conan setup
+        run: conan profile detect
+      - name: Conan install
         run: conan install -u -pr:b=profiles/linux-wayland.profile -pr:h=profiles/emscripten.profile --build=missing --settings=build_type=Release .
-      - name: Web - Cmake configure
+      - name: Cmake configure
         run: cmake --preset conan-emscripten-release -DUBAHN_VERSION=${{ env.VERSION }}
-      - name: Web - Build
+      - name: Build
         run: cmake --build --preset conan-emscripten-release
-      - name: Web - Package
+      - name: Package
         run: cmake --build --preset conan-emscripten-release --target package
-      - name: Web - Store Artifact
+      - name: Store Artifact
         uses: actions/upload-artifact@v4
         with:
           name: 'u-bahn'
           path: ${{ format('dist/u-bahn-web-{0}.tar.gz', env.VERSION) }}
 
   release:
-    needs: [ build ]
+    needs: [ build-web ]
     if: ${{ github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     permissions:

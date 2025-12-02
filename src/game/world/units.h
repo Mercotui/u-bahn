@@ -2,23 +2,24 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <mp-units/chrono.h>
 #include <mp-units/format.h>
-#include <mp-units/systems/isq/isq.h>
-#include <mp-units/systems/si/si.h>
+#include <mp-units/systems/isq_angle.h>
+#include <mp-units/systems/si.h>
 
 namespace Units {
-using Distance = mp_units::quantity<mp_units::si::metre>;
+using mp_units::quantity;
 
-using TimeDelta = mp_units::quantity<mp_units::si::second>;
+using Distance = quantity<mp_units::si::metre>;
 
-using Speed = mp_units::quantity<Distance::unit / TimeDelta::unit>;
+using TimeDelta = quantity<mp_units::si::second>;
 
-using Acceleration = mp_units::quantity<Speed::unit / TimeDelta::unit>;
+using Speed = quantity<Distance::unit / TimeDelta::unit>;
 
-using Angle = mp_units::quantity<mp_units::si::radian>;
+using Acceleration = quantity<Speed::unit / TimeDelta::unit>;
 
-using AngularSpeed = mp_units::quantity<Angle::unit / TimeDelta::unit>;
+using Angle = quantity<mp_units::si::radian>;
 
-using AngularAcceleration = mp_units::quantity<AngularSpeed::unit / TimeDelta::unit>;
+using AngularSpeed = quantity<Angle::unit / TimeDelta::unit>;
+
+using AngularAcceleration = quantity<AngularSpeed::unit / TimeDelta::unit>;
 }  // namespace Units

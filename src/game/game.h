@@ -27,8 +27,8 @@ class Game {
  private:
   bool running_{true};
   bool show_debug_{true};
-  std::unique_ptr<Rails> rails_;
-  std::unique_ptr<Train> train_;
+  // std::unique_ptr<Rails> rails_;
+  // std::unique_ptr<Train> train_;
 
   std::unique_ptr<CameraInterface> camera_;
   std::unique_ptr<InputManagerInterface> input_;

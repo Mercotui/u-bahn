@@ -5,14 +5,14 @@
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
 
+#include "game/game.h"
 #include "platform/platform.h"
-#include "third_party/hello_triangle/hello_triangle.h"
 
 struct GameObj final : Platform::MainLoop {
-  bool operator()() override {
-    HelloTriangle::Draw();
-    return true;
-  }
+  bool operator()() override { return game.Loop(); }
+
+ private:
+  Game game;
 };
 
 int main(int, char**) {
@@ -23,12 +23,8 @@ int main(int, char**) {
   if (!platform) {
     LOG(FATAL) << "No platform";
   }
-  if (!HelloTriangle::Init()) {
-    LOG(FATAL) << "No renderer";
-  }
 
   GameObj game;
   platform->Loop(&game);
-  HelloTriangle::Shutdown();
   return 0;
 }

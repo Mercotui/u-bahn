@@ -14,7 +14,7 @@ endif ()
 target_sources(u-bahn PRIVATE
         main.cpp
         third_party/hello_triangle/hello_triangle.cpp
-        # game/game.cpp
+        game/game.cpp
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL Android)
@@ -48,14 +48,15 @@ add_subdirectory(third_party/glad)
 add_subdirectory(utils)
 add_subdirectory(platform)
 #add_subdirectory(game/input)
-#add_subdirectory(game/control)
-#add_subdirectory(game/world)
+add_subdirectory(game/control)
+add_subdirectory(game/world)
 #add_subdirectory(game/camera)
 
 target_link_libraries(u-bahn PRIVATE
         abseil::abseil
         Platform::Platform Utils::Version Utils::FileReader
-        #        Game::Input Game::Control Game::World Game::Camera
+        Game::Control Game::World
+        #        Game::Input  Game::Camera
 )
 target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)
 

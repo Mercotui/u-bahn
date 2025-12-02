@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <mp-units/systems/isq/isq.h>
+#include <mp-units/framework.h>
+#include <mp-units/systems/isq.h>
 
 #include <memory>
 
@@ -12,7 +13,7 @@
 class Rails;
 
 namespace World {
-inline constexpr struct origin : mp_units::absolute_point_origin<origin, mp_units::isq::distance> {
+inline constexpr struct origin final : mp_units::absolute_point_origin<mp_units::isq::distance> {
 } origin;
 
 using Coordinate = mp_units::quantity_point<Units::Distance::unit, origin>;

@@ -4,22 +4,16 @@
 
 #include "game/camera/camera_interface.h"
 #include "game/world/units.h"
-#include "third_party/raylib/raylib.h"
 
 class Camera final : public CameraInterface {
  public:
   Camera();
 
   /**
-   * Activate this camera.
-   * Locks in the camera parameters, changing the angles will not affect the camera until `Activate` is called again.
+   * Use camera parameters to calculate the view transform
+   * @return the camera's transformation matrix
    */
-  void Activate() override;
-
-  /**
-   * End the camera
-   */
-  void Deactivate() override;
+  glm::mat4 Transform() const override;
 
   /**
    * Control the camera
@@ -35,8 +29,9 @@ class Camera final : public CameraInterface {
   void Target(const World::WorldSpaceCoordinates& point) override;
 
  private:
+  World::WorldSpaceCoordinates target_;
   Units::Angle tracking_yaw_;
   Units::Angle tracking_pitch_;
   Units::Distance tracking_distance_;
-  Raylib::Camera camera_{};
+  glm::mat4 perspective_;
 };

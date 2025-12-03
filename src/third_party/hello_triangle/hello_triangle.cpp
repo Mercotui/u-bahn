@@ -28,6 +28,7 @@
 
 #include <absl/log/log.h>
 
+#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 
 #include "platform/gl.h"
@@ -35,6 +36,7 @@
 namespace {
 GLuint programObject = 0;
 GLuint vbo = 0;
+GLuint transform_location = 0;
 
 GLuint LoadShader(GLenum type, const char *shaderSrc) {
   GLint compiled;
@@ -61,21 +63,27 @@ GLuint LoadShader(GLenum type, const char *shaderSrc) {
 }  // namespace
 
 int HelloTriangle::Init() {
-  constexpr char vertex_shader_source[] =
-      "#version 300 es                          \n"
-      "layout(location = 0) in vec4 vPosition;  \n"
-      "void main()                              \n"
-      "{                                        \n"
-      "   gl_Position = vPosition;              \n"
-      "}                                        \n";
-  constexpr char fragment_shader_source[] =
-      "#version 300 es                              \n"
-      "precision mediump float;                     \n"
-      "out vec4 fragColor;                          \n"
-      "void main()                                  \n"
-      "{                                            \n"
-      "   fragColor = vec4 ( gl_FragCoord.x / 640.0, gl_FragCoord.y / 480.0, 0.0, 1.0 );  \n"
-      "}                                            \n";
+  constexpr char vertex_shader_source[] = R"(
+#version 300 es
+
+uniform mat4 view_transform;
+layout(location = 0) in vec4 vPosition;
+
+void main() {
+   gl_Position = view_transform * vPosition;
+}
+)";
+
+  constexpr char fragment_shader_source[] = R"(
+#version 300 es
+
+precision mediump float;
+out vec4 fragColor;
+
+void main() {
+  fragColor = vec4 ( gl_FragCoord.x / 640.0, gl_FragCoord.y / 480.0, 0.0, 1.0 );
+}
+)";
   GLint linked;
   const GLuint vertexShader = LoadShader(GL_VERTEX_SHADER, vertex_shader_source);
   const GLuint fragmentShader = LoadShader(GL_FRAGMENT_SHADER, fragment_shader_source);
@@ -86,6 +94,7 @@ int HelloTriangle::Init() {
   glAttachShader(programObject, vertexShader);
   glAttachShader(programObject, fragmentShader);
   glLinkProgram(programObject);
+  transform_location = glGetUniformLocation(programObject, "view_transform");
   glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
   if (!linked) {
     GLint infoLen = 0;
@@ -100,7 +109,7 @@ int HelloTriangle::Init() {
   }
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  constexpr GLfloat vertices[] = {0.0f, 0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f};
+  constexpr GLfloat vertices[] = {0.0f, 9.0f, 0.0f, -9.0f, -9.0f, 0.0f, 9.0f, -9.0f, 0.0f};
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -109,7 +118,9 @@ int HelloTriangle::Init() {
   return true;
 }
 
-void HelloTriangle::Draw() {
+void HelloTriangle::Draw(const glm::mat4 &transform) {
+  glUniformMatrix4fv(transform_location, 1, GL_FALSE, glm::value_ptr(transform));
+
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(programObject);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);

@@ -53,4 +53,4 @@ repos:
         # - build/c++11, I use modern C++ without restricting myself to subsets.
         # - build/c++17, same as above
         # - whitespace/indent_namespace, has a lot of false positives on continuation indents
-        args: [ "--filter=-build/c++11,-build/c++17,-whitespace/indent_namespace", "--linelength=120" ]
+        args: [ "--filter=-build/c++11,-build/c++17,-whitespace/indent_namespace,-build/include_order", "--linelength=120" ]

@@ -50,13 +50,13 @@ add_subdirectory(platform)
 #add_subdirectory(game/input)
 add_subdirectory(game/control)
 add_subdirectory(game/world)
-#add_subdirectory(game/camera)
+add_subdirectory(game/camera)
 
 target_link_libraries(u-bahn PRIVATE
         abseil::abseil
         Platform::Platform Utils::Version Utils::FileReader
-        Game::Control Game::World
-        #        Game::Input  Game::Camera
+        Game::Control Game::World Game::Camera
+        #        Game::Input
 )
 target_add_resources(u-bahn ${CMAKE_SOURCE_DIR}/resources/ resources/)
 

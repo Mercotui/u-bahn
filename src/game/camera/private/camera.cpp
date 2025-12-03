@@ -3,12 +3,12 @@
 
 #include "game/camera/private/camera.h"
 
+#include <mp-units/framework.h>
 #include <mp-units/math.h>
-#include <mp-units/quantity.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <memory>
-
-#include "third_party/raylib/raymath.h"
 
 namespace {
 using mp_units::si::metre;
@@ -17,24 +17,35 @@ using mp_units::si::second;
 using std::numbers::pi;
 
 constexpr auto kCameraAngularSpeed = 0.2 * radian / second;
+constexpr auto kFieldOfView = 0.8f;
 
 float fToNumericalFromOrigin(const World::Coordinate coordinate) {
   return static_cast<float>(coordinate.quantity_from(World::origin).numerical_value_in(metre));
 }
 
 float fGetOpposite(const Units::Angle angle, const Units::Distance hypotenuse) {
-  return std::sinf(static_cast<float>(angle.numerical_value_in(radian))) * hypotenuse.numerical_value_in(metre);
+  const auto f_angle = static_cast<float>(angle.numerical_value_in(radian));
+  const auto f_hypotenuse = static_cast<float>(hypotenuse.numerical_value_in(metre));
+  return std::sinf(f_angle) * f_hypotenuse;
 }
 
 float fGetAdjacent(const Units::Angle angle, const Units::Distance hypotenuse) {
-  return std::cosf(static_cast<float>(angle.numerical_value_in(radian))) * hypotenuse.numerical_value_in(metre);
+  const auto f_angle = static_cast<float>(angle.numerical_value_in(radian));
+  const auto f_hypotenuse = static_cast<float>(hypotenuse.numerical_value_in(metre));
+  return std::cosf(f_angle) * f_hypotenuse;
 }
 
-Raylib::Vector3 ToRaylibVector3(const World::WorldSpaceCoordinates& world_space_coordinates) {
+glm::vec3 vec3Translation(const World::WorldSpaceCoordinates& world_space_coordinates) {
   const float x = fToNumericalFromOrigin(world_space_coordinates.x);
   const float y = fToNumericalFromOrigin(world_space_coordinates.y);
   const float z = fToNumericalFromOrigin(world_space_coordinates.z);
-  return {.x = x, .y = y, .z = z};
+  return {x, y, z};
+}
+
+glm::vec3 vec3Rotation(const Units::Angle pitch, const Units::Angle yaw) {
+  auto f_pitch = static_cast<float>(pitch.numerical_value_in(radian));
+  auto f_yaw = static_cast<float>(yaw.numerical_value_in(radian));
+  return {f_pitch, f_yaw, 0.0f};
 }
 }  // namespace
 
@@ -42,22 +53,24 @@ namespace CameraFactory {
 std::unique_ptr<CameraInterface> Create() { return std::make_unique<Camera>(); }
 }  // namespace CameraFactory
 
-Camera::Camera() : tracking_yaw_(0.7 * radian), tracking_pitch_(0.7 * radian), tracking_distance_(40 * metre) {
-  camera_.up = {0.0f, 0.0f, 1.0f};
-  camera_.fovy = 45.0f;
-  camera_.projection = Raylib::CAMERA_PERSPECTIVE;
+Camera::Camera() : tracking_yaw_(0.7 * radian), tracking_pitch_(0.7 * radian), tracking_distance_(10 * metre) {
+  // TODO(Menno 02.12.2025) The aspect ratio should be updated on window resize events
+  perspective_ = glm::perspective(kFieldOfView, 1.0f, 1.0f, 1000.0f);
 }
 
-void Camera::Activate() {
-  const auto z = fGetOpposite(tracking_pitch_, tracking_distance_);
+glm::mat4 Camera::Transform() const {
+  auto position = vec3Translation(target_);
   const auto pitch_xy_component = fGetAdjacent(tracking_pitch_, tracking_distance_) * metre;
-  const auto x = fGetOpposite(tracking_yaw_, pitch_xy_component);
-  const auto y = fGetAdjacent(tracking_yaw_, pitch_xy_component);
-  camera_.position = Raylib::Vector3Add(camera_.target, {x, y, z});
-  Raylib::BeginMode3D(camera_);
-}
+  position.x = fGetOpposite(tracking_yaw_, pitch_xy_component);
+  position.y = fGetAdjacent(tracking_yaw_, pitch_xy_component);
+  position.z += fGetOpposite(tracking_pitch_, tracking_distance_);
 
-void Camera::Deactivate() { Raylib::EndMode3D(); }
+  const auto rotation = vec3Rotation(tracking_pitch_, tracking_yaw_);
+  glm::mat4 view = glm::translate(glm::mat4(1.0f), -position);
+  view = glm::rotate(view, -rotation.y, glm::vec3(1.0f, 0.0f, 0.0f));
+  view = glm::rotate(view, -rotation.x, glm::vec3(0.0f, 1.0f, 0.0f));
+  return perspective_ * view;
+}
 
 void Camera::Control(const Control::CameraControls& controls, Units::TimeDelta time) {
   tracking_yaw_ += controls.x * kCameraAngularSpeed * time;
@@ -66,4 +79,4 @@ void Camera::Control(const Control::CameraControls& controls, Units::TimeDelta t
   tracking_pitch_ = std::clamp(new_pitch, 0.05 * pi * radian, 0.45 * pi * radian);
 }
 
-void Camera::Target(const World::WorldSpaceCoordinates& point) { camera_.target = ToRaylibVector3(point); }
+void Camera::Target(const World::WorldSpaceCoordinates& point) { target_ = point; }

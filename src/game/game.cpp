@@ -29,7 +29,7 @@ constexpr auto kDebugTextFontsize = 20;
 
 Game::Game()
     :  // rails_(std::make_unique<Rails>()),
-       // camera_(CameraFactory::Create()),
+      camera_(CameraFactory::Create()),
       // input_(InputManagerFactory::Create(Platform::GetPlatform())),
       controls_mapper_(std::make_unique<ControlSchemeMapper>()),
       reader_(FileReaderFactory::Create(FileReaderFactory::Type::kWatcher)) {
@@ -52,12 +52,10 @@ Game::Game()
 Game::~Game() { HelloTriangle::Shutdown(); }
 
 bool Game::Loop() {
-  HelloTriangle::Draw();
-  return true;
-  const auto controls = controls_mapper_->MapGameControls(input_->Poll());
-  const Units::TimeDelta time = 0 * mp_units::si::second;
+  auto controls = controls_mapper_->MapGameControls({});  // input_->Poll());
+  const Units::TimeDelta time = 0.01 * mp_units::si::second;
+  controls.camera_controls.x = 1.0f;
 
-  // Raylib::GetFrameTime()
   if (controls.show_debug) {
     show_debug_ = !show_debug_;
   }
@@ -65,16 +63,14 @@ bool Game::Loop() {
   camera_->Control(controls.camera_controls, time);
   // camera_->Target(train_->GetCenterPoint());
 
-  // Raylib::BeginDrawing();
-  // Raylib::ClearBackground(Raylib::RAYWHITE);
-
-  camera_->Activate();
+  // Raylib::BeginDrckground(Raylib::RAYWHITE);
+  const auto transform = camera_->Transform();
+  HelloTriangle::Draw(transform);
   // train_->Draw();
   if (show_debug_) {
     // rails_->DrawDebug();
     // train_->DrawDebug();
   }
-  camera_->Deactivate();
 
   if (show_debug_) {
     // Draw top left status

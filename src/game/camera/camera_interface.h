@@ -5,6 +5,7 @@
 #include <game/control/control.h>
 #include <game/world/world.h>
 
+#include <glm/mat4x4.hpp>
 #include <memory>
 
 class CameraInterface {
@@ -12,15 +13,10 @@ class CameraInterface {
   virtual ~CameraInterface() = default;
 
   /**
-   * Activate the camera
-   * Locks in the camera parameters, changing the angles will not affect the camera until `Activate` is called again.
+   * Use camera parameters to calculate the view transform
+   * @return the camera's transformation matrix
    */
-  virtual void Activate() = 0;
-
-  /**
-   * Deactivate the camera
-   */
-  virtual void Deactivate() = 0;
+  virtual glm::mat4 Transform() const = 0;
 
   /**
    * Control the camera

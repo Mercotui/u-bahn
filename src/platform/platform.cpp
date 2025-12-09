@@ -63,7 +63,10 @@ SDL_GLContext CreateGlContext(SDL_Window* window) {
   }
 
 #if !defined(PLATFORM_WEB)
-  if (!gladLoadGLES2Loader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
+#if defined(NDEBUG)
+  gladUninstallGLES2Debug();
+#endif
+  if (!gladLoadGLES2(SDL_GL_GetProcAddress)) {
     LOG(ERROR) << "Couldn't initialize GLAD";
     SDL_GL_DestroyContext(context);
     return nullptr;

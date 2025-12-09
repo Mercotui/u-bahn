@@ -20,12 +20,13 @@ target_link_libraries(rendering PRIVATE
 )
 
 add_executable(rendering_test
+        private/gl_mock.cpp
         private/model_cache_unittest.cpp
         private/model_data_packer_unittest.cpp
 )
 target_link_libraries(rendering_test PRIVATE
         Game::Rendering
-        GLAD::GLAD abseil::abseil fastgltf::fastgltf GTest::gtest GTest::gtest_main GTest::gmock
+        Platform::Platform GLAD::GLAD abseil::abseil fastgltf::fastgltf GTest::gtest GTest::gtest_main GTest::gmock
 )
 add_test(NAME rendering_test COMMAND rendering_test)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/private/test_cube.glb"

@@ -7,5 +7,5 @@
 #if defined(PLATFORM_WEB)
 #include <GLES3/gl3.h>
 #else
-#include <glad/glad.h>
+#include <glad/gles2.h>
 #endif

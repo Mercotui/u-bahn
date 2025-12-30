@@ -10,6 +10,7 @@ add_library(rendering STATIC
         private/camera.cpp
         private/model_data_packer.cpp
         private/model_cache.cpp
+        private/scene_tree.cpp
 )
 add_library(Game::Rendering ALIAS rendering)
 
@@ -23,6 +24,7 @@ add_executable(rendering_test
         private/gl_mock.cpp
         private/model_cache_unittest.cpp
         private/model_data_packer_unittest.cpp
+        private/scene_tree_unittest.cpp
 )
 target_link_libraries(rendering_test PRIVATE
         Game::Rendering

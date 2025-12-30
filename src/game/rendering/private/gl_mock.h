@@ -16,7 +16,8 @@
  */
 class GlMock {
  public:
-  using Arg = std::variant<GLint, GLint*, GLuint, GLuint*, GLbyte, GLbyte*, GLfloat, GLfloat*, GLchar*>;
+  using Arg =
+      std::variant<void*, GLsizeiptr, GLint, GLint*, GLuint, GLuint*, GLbyte, GLbyte*, GLfloat, GLfloat*, GLchar*>;
   using Args = std::vector<Arg>;
 
   GlMock();

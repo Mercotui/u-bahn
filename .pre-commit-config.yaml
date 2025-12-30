@@ -46,7 +46,7 @@ repos:
       - id: black
 
   - repo: https://github.com/cpplint/cpplint
-    rev: f4363d7fc0d5f38c4fd41b658e069e96583da0d5
+    rev: 350702a4d39395571bd118c9a3cff0a573488d61
     hooks:
       - id: cpplint
         # Disable the rules:

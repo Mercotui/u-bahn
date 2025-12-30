@@ -38,7 +38,7 @@ GLuint programObject = 0;
 GLuint vbo = 0;
 GLuint transform_location = 0;
 
-GLuint LoadShader(GLenum type, const char *shaderSrc) {
+GLuint LoadShader(GLenum type, const char* shaderSrc) {
   GLint compiled;
   const GLuint shader = glCreateShader(type);
   if (shader == 0) {
@@ -118,11 +118,10 @@ void main() {
   return true;
 }
 
-void HelloTriangle::Draw(const glm::mat4 &transform) {
-  glUniformMatrix4fv(transform_location, 1, GL_FALSE, glm::value_ptr(transform));
-
+void HelloTriangle::Draw(const glm::mat4& transform) {
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(programObject);
+  glUniformMatrix4fv(transform_location, 1, GL_FALSE, glm::value_ptr(transform));
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
   glEnableVertexAttribArray(0);
   glDrawArrays(GL_TRIANGLES, 0, 3);

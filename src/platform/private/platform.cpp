@@ -51,6 +51,46 @@ SDL_Window* CreateWindow() {
   return SDL_CreateWindow("U-Bahn", kWindowWidth, kWindowHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 }
 
+/// Get the string for an OpenGL error
+const char* GlErrorCodeText(const GLenum error) {
+  switch (error) {
+    case GL_NO_ERROR: {
+      return "GL_NO_ERROR";
+    }
+    case GL_INVALID_ENUM: {
+      return "GL_INVALID_ENUM";
+    }
+    case GL_INVALID_VALUE: {
+      return "GL_INVALID_VALUE";
+    }
+    case GL_INVALID_OPERATION: {
+      return "GL_INVALID_OPERATION";
+    }
+    case GL_INVALID_FRAMEBUFFER_OPERATION: {
+      return "GL_INVALID_FRAMEBUFFER_OPERATION";
+    }
+    case GL_OUT_OF_MEMORY: {
+      return "GL_OUT_OF_MEMORY";
+    }
+    default: {
+      return "unknown";
+    }
+  }
+}
+
+#if !defined(PLATFORM_WEB)
+/// For debug builds, this is called before every OpenGL call
+void PreGlCallback(const char*, GLADapiproc, int, ...) {}
+
+/// For debug builds, this is called after every OpenGL call
+void PostGlCallback(void*, const char* name, GLADapiproc, int, ...) {
+  GLenum error;
+  while ((error = glad_glGetError()) != GL_NO_ERROR) {
+    LOG(WARNING) << "GLES call to " << name << " resulted in error: " << GlErrorCodeText(error);
+  }
+}
+#endif
+
 SDL_GLContext CreateGlContext(SDL_Window* window) {
   const auto context = SDL_GL_CreateContext(window);
   if (!context) {
@@ -65,9 +105,12 @@ SDL_GLContext CreateGlContext(SDL_Window* window) {
   }
 
 #if !defined(PLATFORM_WEB)
+  gladSetGLES2PreCallback(PreGlCallback);
+  gladSetGLES2PostCallback(PostGlCallback);
 #if defined(NDEBUG)
   gladUninstallGLES2Debug();
 #endif
+
   if (!gladLoadGLES2(SDL_GL_GetProcAddress)) {
     LOG(ERROR) << "Couldn't initialize GLAD";
     SDL_GL_DestroyContext(context);

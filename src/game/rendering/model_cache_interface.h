@@ -14,7 +14,7 @@ class ModelCacheInterface {
  public:
   virtual ~ModelCacheInterface() = default;
 
-  virtual Model Load(const std::filesystem::path& file) = 0;
+  virtual Model Register(const std::filesystem::path& file) = 0;
 
   [[nodiscard]] virtual const ModelData& GetData(ModelDataId id) const = 0;
 };

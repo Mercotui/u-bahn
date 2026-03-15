@@ -2,17 +2,21 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <array>
 #include <chrono>
-#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "platform/clock.h"
+
 struct Input {
-  enum class Type {
-    kKeyboard,
+  enum class Type : size_t {
+    kKeyboard = 0,
     kMouse,
     kTouch,
-    kJoystick,
+    kGamepad,
+    kEnumTypeSize  //! Size of Type enum
   };
 
   struct Config {
@@ -20,8 +24,15 @@ struct Input {
   };
 
   struct Axis {
+    struct Sample {
+      Clock::time_point time_point{};
+      float value{};
+    };
+
     std::string name;
     float value{0.0f};
+    std::pair<Sample, Sample> history{{}, {}};
+    unsigned history_size{};
     bool active{false};
   };
 
@@ -42,4 +53,4 @@ struct Input {
   Config config{};
 };
 
-using InputList = std::vector<std::shared_ptr<Input>>;
+using Inputs = std::array<std::vector<Input>, std::to_underlying(Input::Type::kEnumTypeSize)>;

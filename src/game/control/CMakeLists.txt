@@ -9,6 +9,7 @@ add_library(game_control STATIC
 )
 add_library(Game::Control ALIAS game_control)
 target_link_libraries(game_control PRIVATE absl::log)
+target_link_libraries(game_control PUBLIC Platform::Platform)
 
 add_executable(control_test
         private/control_scheme_mapper_unittest.cpp

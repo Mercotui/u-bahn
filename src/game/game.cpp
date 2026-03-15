@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "game/control/control_scheme_mapper.h"
-#include "game/input/input_manager_interface.h"
 #include "game/rendering/camera_interface.h"
 #include "game/world/units.h"
 #include "platform/platform.h"
@@ -51,8 +50,8 @@ Game::Game()
 
 Game::~Game() { HelloTriangle::Shutdown(); }
 
-bool Game::Loop() {
-  auto controls = controls_mapper_->MapGameControls({});  // input_->Poll());
+bool Game::operator()(const Platform::LoopContext& context) {
+  auto controls = controls_mapper_->MapGameControls(context.inputs);
   const Units::TimeDelta time = 0.01 * mp_units::si::second;
   controls.camera_controls.x = 1.0f;
 

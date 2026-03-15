@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "game/input/input.h"
+#include "platform/input.h"
 
 namespace Control {
 struct Scheme {};

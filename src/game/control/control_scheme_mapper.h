@@ -3,11 +3,11 @@
 #pragma once
 
 #include "game/control/control.h"
-#include "game/input/input.h"
+#include "platform/input.h"
 
 class ControlSchemeMapper {
  public:
-  Control::GameControls MapGameControls(const InputList& inputs);
+  Control::GameControls MapGameControls(const Inputs& inputs);
 
  private:
   // TODO(Menno 16.02.2025) Break these variables out into mouse specific class

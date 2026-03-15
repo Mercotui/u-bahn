@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2025 Menno van der Graaf <mennovandergraaf@hotmail.com>
+// SPDX-FileCopyrightText: 2026 Menno van der Graaf <mennovandergraaf@hotmail.com>
 // SPDX-License-Identifier: MIT
 
 #include "platform/platform.h"
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_video.h>
 #include <absl/log/log.h>
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -13,15 +14,16 @@
 #include <memory>
 
 #include "platform/gl.h"
+#include "platform/private/input_manager.h"
 
 namespace {
 constexpr auto kPlatformType =
-#if defined(PLATFORM_DESKTOP)
-    Platform::Type::kDesktop;
-#elif defined(PLATFORM_ANDROID)
+#if defined(PLATFORM_ANDROID)
     Platform::Type::kAndroid;
 #elif defined(PLATFORM_WEB)
     Platform::Type::kWeb;
+#else
+    Platform::Type::kDesktop;
 #endif
 
 // TODO(Menno 15.10.2025) Delete these two defines
@@ -72,7 +74,11 @@ SDL_GLContext CreateGlContext(SDL_Window* window) {
     return nullptr;
   }
 #endif
-  LOG(INFO) << "GLES Version: " << glGetString(GL_MAJOR_VERSION) << "." << glGetString(GL_MAJOR_VERSION);
+  int major{};
+  int minor{};
+  glGetIntegerv(GL_MAJOR_VERSION, &major);
+  glGetIntegerv(GL_MINOR_VERSION, &minor);
+  LOG(INFO) << "GLES Version: " << major << "." << minor;
   LOG(INFO) << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION);
   LOG(INFO) << "OpenGL Renderer: " << glGetString(GL_RENDERER);
   return context;
@@ -126,14 +132,22 @@ void Platform::Loop(MainLoop* main_loop) {
 bool Platform::LoopInternal(MainLoop* main_loop) {
   const auto self = main_loop->platform;
 
+  bool platform_continue = true;
+
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
+    if (event.type == SDL_EVENT_QUIT) {
+      platform_continue = false;
+    } else {
+      self->input_manager_.HandleEvent(event);
+    }
   }
 
-  // Call the application loop
-  const bool should_continue = (*main_loop)();
+  const LoopContext context{self->input_manager_.GetInputs()};
+  const bool loop_continue = (*main_loop)(context);
 
+  self->input_manager_.ClearChanges();
   SDL_GL_SwapWindow(self->window_);
 
-  return should_continue;
+  return loop_continue && platform_continue;
 }

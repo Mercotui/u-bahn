@@ -6,10 +6,10 @@
 #include <absl/base/macros.h>
 
 #include <algorithm>
-#include <memory>
+#include <ranges>
 #include <vector>
 
-#include "game/input/keyboard_mouse.h"
+#include "platform/keyboard_mouse.h"
 
 namespace {
 using Control::CameraControls;
@@ -22,23 +22,21 @@ using KeyboardMouseInput::MouseButton;
 
 bool DetectDownStroke(const Input::Button& button) { return button.changed && button.down; }
 
-const Input::Button& GetButton(const std::shared_ptr<Input>& input, Key key) {
-  return input->buttons[static_cast<unsigned>(key)];
+const Input::Button& GetButton(const Input* input, const Key key) { return input->buttons[std::to_underlying(key)]; }
+
+const Input::Button& GetButton(const Input* input, const MouseButton button) {
+  return input->buttons[std::to_underlying(button)];
 }
 
-const Input::Button& GetButton(const std::shared_ptr<Input>& input, MouseButton button) {
-  return input->buttons[static_cast<unsigned>(button)];
-}
+float GetAxisValue(const Input* input, MouseAxis axis) { return input->axes[static_cast<unsigned>(axis)].value; }
 
-float GetAxisValue(const std::shared_ptr<Input>& input, MouseAxis axis) {
-  return input->axes[static_cast<unsigned>(axis)].value;
-}
-
-std::shared_ptr<Input> GetActiveInput(const std::vector<std::shared_ptr<Input>>& inputs) {
-  for (const auto& input : inputs) {
-    // TODO(Menno 06.02.2025) Merge all active inputs together so that moving the mouse does not block keyboard input
-    if (input->active) {
-      return input;
+const Input* GetActiveInput(const Inputs& inputs) {
+  for (const auto& inputs_per_type : inputs) {
+    for (const auto& input : inputs_per_type) {
+      // TODO(Menno 06.02.2025) Merge all active inputs together so that moving the mouse does not block keyboard input
+      if (input.active) {
+        return &input;
+      }
     }
   }
 
@@ -46,7 +44,7 @@ std::shared_ptr<Input> GetActiveInput(const std::vector<std::shared_ptr<Input>>&
 }
 }  // namespace
 
-GameControls ControlSchemeMapper::MapGameControls(const InputList& inputs) {
+GameControls ControlSchemeMapper::MapGameControls(const Inputs& inputs) {
   GameControls controls;
   const auto input = GetActiveInput(inputs);
 
@@ -86,7 +84,7 @@ GameControls ControlSchemeMapper::MapGameControls(const InputList& inputs) {
     }
     controls.train_controls.throttle = throttle;
     controls.train_controls.brake = brake;
-  } else if (input->type == Input::Type::kJoystick) {
+  } else if (input->type == Input::Type::kGamepad) {
     controls.train_controls.throttle = input->axes[2].value;
   } else {
     // Unknown input type

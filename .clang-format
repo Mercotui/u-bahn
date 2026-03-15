@@ -3,3 +3,4 @@ ColumnLimit: 120
 PointerAlignment: Left
 ReferenceAlignment: Left
 DerivePointerAlignment: false
+AllowShortCaseLabelsOnASingleLine: true

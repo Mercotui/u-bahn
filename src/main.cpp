@@ -8,13 +8,6 @@
 #include "game/game.h"
 #include "platform/platform.h"
 
-struct GameObj final : Platform::MainLoop {
-  bool operator()() override { return game.Loop(); }
-
- private:
-  Game game;
-};
-
 int main(int, char**) {
   absl::InitializeLog();
   absl::SetStderrThreshold(absl::LogSeverityAtLeast::kWarning);
@@ -24,7 +17,7 @@ int main(int, char**) {
     LOG(FATAL) << "No platform";
   }
 
-  GameObj game;
+  Game game;
   platform->Loop(&game);
   return 0;
 }

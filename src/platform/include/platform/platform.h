@@ -6,12 +6,20 @@
 
 #include <memory>
 
+// TODO(Menno 13.03.2026) Leaking private include here, please hide behind interface
+#include "platform/private/input_manager.h"
+
 class Platform {
  public:
   enum class Type { kAndroid, kDesktop, kWeb };
+
+  struct LoopContext {
+    const Inputs& inputs;
+  };
+
   struct MainLoop {
     virtual ~MainLoop() = default;
-    virtual bool operator()() = 0;
+    virtual bool operator()(const LoopContext&) = 0;
     Platform* platform = nullptr;
   };
 
@@ -29,6 +37,8 @@ class Platform {
  private:
   static bool LoopInternal(MainLoop* main_loop);
 
+  // TODO(Menno 09.03.2026) Hide these variables behind an PlatformInterface
   SDL_Window* window_ = nullptr;
   SDL_GLContext gl_context_ = nullptr;
+  InputManager input_manager_;
 };

@@ -13,7 +13,7 @@ namespace {
 #define CHECK_NAME(NAME) if (name == NAME) {
 #define CHECK_END }
 #define CHECK_CONTINUE CHECK_END else
-#define PARSE_GL_ARG(TYPE) args.push_back(va_arg(args_list, TYPE));
+#define PARSE_GL_ARG(TYPE) args.emplace_back(va_arg(args_list, TYPE));
 #define PARSE_GL_ARGS1(NAME, ARG0) CHECK_NAME(NAME) PARSE_GL_ARG(ARG0) CHECK_CONTINUE
 #define PARSE_GL_ARGS2(NAME, ARG0, ARG1) CHECK_NAME(NAME) PARSE_GL_ARG(ARG0) PARSE_GL_ARG(ARG1) CHECK_CONTINUE
 #define PARSE_GL_ARGS3(NAME, ARG0, ARG1, ARG2) \
@@ -38,12 +38,18 @@ void glad_post_call_callback(void* ret, const char* name_raw, GLADapiproc, const
   GlMock::Args args;
   va_list args_list;
   va_start(args_list, len_args);
-  PARSE_GL_ARGS1("glGetString", GLenum)
+  // TODO(Menno 2026.01.01) this entire section should be using nolint begin (bugprone-branch-clone) but cpplint would
+  //  get confused by that, see https://github.com/cpplint/cpplint/issues/298 roadmapped for cpplint 2.1.0.
+  PARSE_GL_ARGS1("glGetString", GLenum)  // NOLINT(bugprone-branch-clone)
   PARSE_GL_ARGS2("glGetIntegerv", GLenum, GLint*)
-  PARSE_GL_ARGS2("glGenBuffers", GLsizei, GLuint*)
+  PARSE_GL_ARGS2("glGenBuffers", GLsizei, GLuint*)  // NOLINT(bugprone-branch-clone)
+  PARSE_GL_ARGS2("glGenVertexArrays", GLsizei, GLuint*)
+  PARSE_GL_ARGS1("glBindVertexArray", GLuint)
+  PARSE_GL_ARGS2("glBindBuffer", GLenum, GLuint)
+  PARSE_GL_ARGS4("glBufferData", GLenum, GLsizeiptr, void*, GLenum)
   // Each PARSE_GL_ARGS ends with else, finish off the list with this catch all log:
   {  // NOLINT(whitespace/braces)
-    LOG(WARNING) << "Unknown args for GL mock: " << name_raw;
+    LOG(FATAL) << "Unknown args for GL mock: " << name_raw;
   }
   va_end(args_list);
 

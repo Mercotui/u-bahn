@@ -8,7 +8,7 @@ find_package(glm REQUIRED)
 
 add_library(rendering STATIC
         private/camera.cpp
-        private/model_data_packer.cpp
+        private/mesh_packer.cpp
         private/model_cache.cpp
         private/scene_tree.cpp
 )
@@ -22,8 +22,8 @@ target_link_libraries(rendering PRIVATE
 
 add_executable(rendering_test
         private/gl_mock.cpp
+        private/mesh_packer_unittest.cpp
         private/model_cache_unittest.cpp
-        private/model_data_packer_unittest.cpp
         private/scene_tree_unittest.cpp
 )
 target_link_libraries(rendering_test PRIVATE
@@ -33,3 +33,5 @@ target_link_libraries(rendering_test PRIVATE
 add_test(NAME rendering_test COMMAND rendering_test)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/private/test_cube.glb"
         "${CMAKE_CURRENT_BINARY_DIR}/test_cube.glb" COPYONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/private/test_cube.gltf"
+        "${CMAKE_CURRENT_BINARY_DIR}/test_cube.gltf" COPYONLY)
